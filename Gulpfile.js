@@ -45,5 +45,5 @@ function _publish(cb) {
 
 
 
-exports.default = series(_cleanRelease, _copyJs, _incrementJsonPatch, _copyPackageJson, _publish);
+exports.patch = series(_cleanRelease, _copyJs, _incrementJsonPatch, _copyPackageJson, _publish);
 
