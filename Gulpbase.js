@@ -6,6 +6,4 @@ function cleanRelease() {
   return del(releaseDir);
 }
 
-export {
-  cleanRelease
-}
+exports.cleanRelease = cleanRelease;
