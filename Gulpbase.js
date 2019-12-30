@@ -1,4 +1,6 @@
-// Define directories used in functions here which means they will execute from <project>/node_modules/@franzzemen/gulp-base
+const src = require('gulp').src;
+const dest = require('gulp').dest;
+const exec = require('child_process').exec;
 const del = require('del');
 
 const srcDir = './src';
