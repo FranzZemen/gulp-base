@@ -3,7 +3,13 @@ const dest = require('gulp').dest;
 const exec = require('child_process').exec;
 const del = require('del');
 const fs = require('fs');
-const packageJson = require('./package.json');
+
+var packageJson = null;
+
+function init(package) {
+  packageJson = package;
+  return exports;
+}
 
 const srcDir = './src';
 const buildDir = './build';
@@ -32,9 +38,9 @@ function copySrcJsToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
-function copyPackageJsonToPublishDir() {
-  return src('./package.json')
-    .pipe(dest(publishDir));
+function copyPackageJsonToPublishDir(cb) {
+  fs.writeFileSync(publishDir + '/package.json', JSON.stringify(packageJson));
+  cb();
 }
 
 function incrementJsonPatch(cb) {
@@ -62,6 +68,8 @@ exports.srcDir = srcDir;
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
 exports.publishDir = publishDir;
+
+exports.init = init;
 
 exports.cleanBuild = cleanBuild;
 exports.cleanRelease = cleanRelease;
