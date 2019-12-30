@@ -3,6 +3,8 @@ const dest = require('gulp').dest;
 const exec = require('child_process').exec;
 const del = require('del');
 const fs = require('fs');
+const git = require('gulp-git');
+
 
 var packageJson = null;
 
