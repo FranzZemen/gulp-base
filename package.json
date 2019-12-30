@@ -1,0 +1,19 @@
+{
+  "name": "@franzzemen/gulp-base",
+  "version": "1.0.0",
+  "description": "Common Gulp base",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FranzZemen/gulp-base.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FranzZemen/gulp-base/issues"
+  },
+  "homepage": "https://github.com/FranzZemen/gulp-base#readme"
+}
