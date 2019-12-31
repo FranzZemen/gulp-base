@@ -5,6 +5,7 @@ const del = require('del');
 const fs = require('fs');
 const zip = require('gulp-zip');
 const path = require('path');
+const updateLambda = require('@franzzemen/aws-scripts').updateLambda;
 
 
 
@@ -36,6 +37,11 @@ function cleanPublish() {
   return del(publishDir);
 }
 
+function copySrcJsToBuildDir() {
+  return src(srcDir + '/**/*.js')
+    .pipe(dest(buildDir));
+}
+
 function copySrcJsToReleaseDir ()  {
   return src(srcDir + '/**/*.js')
     .pipe(dest(releaseDir));
@@ -45,6 +51,24 @@ function copySrcJsToPublishDir ()  {
   return src(srcDir + '/**/*.js')
     .pipe(dest(publishDir));
 };
+
+function copyConfigToBuildDir() {
+  return src(srcDir + '/config.json')
+    .pipe(dest(buildDir));
+}
+
+function copyPackageJsonToBuildDir(cb) {
+  try {
+    fs.mkdirSync(buildDir);
+  } catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  fs.writeFileSync(buildDir + '/package.json', JSON.stringify(packageJson));
+  cb();
+}
+
 
 function copyPackageJsonToPublishDir(cb) {
   try {
@@ -85,6 +109,12 @@ function packageLayerRelease() {
     .pipe(dest(releaseDir));
 }
 
+function packageLambdaRelease() {
+  return src(buildDir + '/**/*.*')
+    .pipe(zip(unscopedName + '.zip'))
+    .pipe(dest(releaseDir));
+}
+
 
 function incrementJsonPatch(cb) {
   let version = packageJson.version;
@@ -97,6 +127,14 @@ function incrementJsonPatch(cb) {
     fs.writeFileSync('./package.json', JSON.stringify(packageJson));
   }
   cb();
+}
+
+function npmInstallBuildDir(cb) {
+  exec('npm install --only=prod --no-package-lock',{cwd: buildDir}, (err, stdout, stderr) =>{
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
 }
 
 function npmInstallLayerDir(cb) {
@@ -115,6 +153,12 @@ function publish(cb) {
   });
 }
 
+function deployLambda() {
+  const zipPath =  path.resolve(releaseDir + '/' + unscopedName + '.zip');
+  console.log('Zip path: ' + zipPath);
+  return updateLambda(unscopedName, zipPath);
+}
+
 exports.srcDir = srcDir;
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
@@ -126,14 +170,24 @@ exports.cleanBuild = cleanBuild;
 exports.cleanRelease = cleanRelease;
 exports.cleanPublish = cleanPublish;
 
+exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
+
+exports.copyConfigToBuildDir = copyConfigToBuildDir;
+
+exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
 exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
 
+exports.npmInstallBuildDir = npmInstallBuildDir;
 exports.npmInstallLayerDir = npmInstallLayerDir;
 
 exports.packageLayerRelease = packageLayerRelease;
+exports.packageLambdaRelease = packageLambdaRelease;
 
 exports.incrementJsonPatch = incrementJsonPatch;
+
+exports.deployLambda = deployLambda;
+
 exports.publish = publish;
