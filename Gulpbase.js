@@ -3,13 +3,17 @@ const dest = require('gulp').dest;
 const exec = require('child_process').exec;
 const del = require('del');
 const fs = require('fs');
-const git = require('gulp-git');
+const zip = require('gulp-zip');
+const path = require('path');
+
 
 
 var packageJson = null;
+let unscopedName = null;
 
 function init(package) {
   packageJson = package;
+   unscopedName = path.parse(packageJson.name).name;
   return exports;
 }
 
@@ -17,6 +21,8 @@ const srcDir = './src';
 const buildDir = './build';
 const releaseDir = './release';
 const publishDir = './publish';
+const lambdaLayerDir = buildDir + '/nodejs';
+
 
 function cleanBuild() {
   return del(buildDir);
@@ -41,9 +47,44 @@ function copySrcJsToPublishDir ()  {
 };
 
 function copyPackageJsonToPublishDir(cb) {
+  try {
+    fs.mkdirSync(publishDir);
+  } catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(packageJson));
   cb();
 }
+
+function copyPackageJsonToLambdaLayerDir(cb) {
+  try {
+    fs.mkdirSync(buildDir);
+  }
+  catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  try {
+    fs.mkdirSync(lambdaLayerDir);
+  }
+  catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  fs.writeFileSync(lambdaLayerDir + '/package.json', JSON.stringify(packageJson));
+  cb();
+}
+
+function packageLayerRelease() {
+  return src(buildDir + '/**/*.*')
+    .pipe(zip(unscopedName + '.zip'))
+    .pipe(dest(releaseDir));
+}
+
 
 function incrementJsonPatch(cb) {
   let version = packageJson.version;
@@ -56,6 +97,14 @@ function incrementJsonPatch(cb) {
     fs.writeFileSync('./package.json', JSON.stringify(packageJson));
   }
   cb();
+}
+
+function npmInstallLayerDir(cb) {
+  exec('npm install --only=prod --no-package-lock',{cwd: lambdaLayerDir}, (err, stdout, stderr) =>{
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
 }
 
 function publish(cb) {
@@ -80,6 +129,11 @@ exports.cleanPublish = cleanPublish;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
+exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
+
+exports.npmInstallLayerDir = npmInstallLayerDir;
+
+exports.packageLayerRelease = packageLayerRelease;
 
 exports.incrementJsonPatch = incrementJsonPatch;
 exports.publish = publish;

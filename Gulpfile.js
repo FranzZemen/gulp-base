@@ -7,7 +7,11 @@ return src('./Gulpbase.js')
   .pipe(dest(gulpBase.publishDir));
 }
 
-exports.default = series(gulpBase.cleanRelease, copyJS, gulpBase.incrementJsonPatch, gulpBase.copyPackageJsonToPublishDir);
+exports.default = series(
+  gulpBase.cleanRelease,
+  copyJS,
+  gulpBase.copyPackageJsonToPublishDir);
+
 exports.patch = series(
   gulpBase.cleanRelease,
   copyJS,
