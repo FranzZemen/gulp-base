@@ -240,7 +240,7 @@ function gitCheckIn(cb) {
 };
 
 function gitPush(cb) {
-  console.log('Pushing to master'); 
+  console.log('Pushing to master');
   git.push('origin', 'master', function (err) {
     if (err) throw err;
   });
