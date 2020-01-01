@@ -7,9 +7,6 @@ return src('./Gulpbase.js')
   .pipe(dest(gulpBase.publishDir));
 }
 
-exports.gitCheckIn = gulpBase.gitCheckIn;
-exports.gitPush = gulpBase.gitPush;
-
 exports.default = series(
   gulpBase.cleanRelease,
   copyJS,
@@ -18,7 +15,7 @@ exports.default = series(
 exports.cleanPublish = gulpBase.cleanPublish;
 
 exports.patch = series(
-  gulpBase.cleanPublish,
+  gulpBase.cleanPublish, 
   copyJS,
   gulpBase.incrementJsonPatch,
   gulpBase.copyPackageJsonToPublishDir,
