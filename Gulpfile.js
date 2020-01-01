@@ -8,6 +8,7 @@ return src('./Gulpbase.js')
 }
 
 exports.gitCheckIn = gulpBase.gitCheckIn;
+exports.gitPush = gulpBase.gitPush;
 
 exports.default = series(
   gulpBase.cleanRelease,

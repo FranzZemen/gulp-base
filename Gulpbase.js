@@ -239,6 +239,13 @@ function gitCheckIn(cb) {
   else return Promise.reject('No source comment');
 };
 
+function gitPush(cb) {
+  git.push('origin', 'master', function (err) {
+    if (err) throw err;
+  });
+  cb();
+};
+
 
 exports.srcDir = srcDir;
 exports.buildDir = buildDir;
@@ -277,4 +284,5 @@ exports.deployLambda = deployLambda;
 exports.publish = publish;
 
 exports.gitCheckIn = gitCheckIn;
+exports.gitPush = gitPush;
 
