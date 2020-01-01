@@ -22,3 +22,18 @@ exports.patch = series(
   gulpBase.publish,
   gulpBase.cleanPublish);
 
+exports.minor = series(
+  gulpBase.cleanPublish,
+  copyJS,
+  gulpBase.incrementJsonMinor,
+  gulpBase.copyPackageJsonToPublishDir,
+  gulpBase.publish,
+  gulpBase.cleanPublish);
+
+exports.major = series(
+  gulpBase.cleanPublish,
+  copyJS,
+  gulpBase.incrementJsonMajor,
+  gulpBase.copyPackageJsonToPublishDir,
+  gulpBase.publish,
+  gulpBase.cleanPublish);

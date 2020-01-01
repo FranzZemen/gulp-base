@@ -52,6 +52,11 @@ function copySrcJsToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
+function copySrcJsToLambdaLayerDir () {
+  return src(srcDir + '/**/*.js')
+    .pipe(dest(lambdaLayerDir));
+}
+
 function copyConfigToBuildDir() {
   return src(srcDir + '/config.json')
     .pipe(dest(buildDir));
@@ -129,6 +134,32 @@ function incrementJsonPatch(cb) {
   cb();
 }
 
+function incrementJsonMinor(cb) {
+  let version = packageJson.version;
+  const semver = version.split('.');
+  if(semver.length = 3) {
+    console.log('Old package version: ', packageJson.version);
+    let minorVersion = parseInt(semver[1],10) + 1;
+    packageJson.version = semver[0] + '.' + minorVersion + '.0';
+    console.log('New package version: ' + packageJson.version);
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson));
+  }
+  cb();
+}
+
+function incrementJsonMajor(cb) {
+  let version = packageJson.version;
+  const semver = version.split('.');
+  if(semver.length = 3) {
+    console.log('Old package version: ', packageJson.version);
+    let majorVersion = parseInt(semver[0],10) + 1;
+    packageJson.version = majorVersion + '.0.0';
+    console.log('New package version: ' + packageJson.version);
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson));
+  }
+  cb();
+}
+
 function npmInstallBuildDir(cb) {
   exec('npm install --only=prod --no-package-lock',{cwd: buildDir}, (err, stdout, stderr) =>{
     console.log(stdout);
@@ -173,6 +204,7 @@ exports.cleanPublish = cleanPublish;
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
+exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;
 
 exports.copyConfigToBuildDir = copyConfigToBuildDir;
 
@@ -187,6 +219,8 @@ exports.packageLayerRelease = packageLayerRelease;
 exports.packageLambdaRelease = packageLambdaRelease;
 
 exports.incrementJsonPatch = incrementJsonPatch;
+exports.incrementJsonMinor = incrementJsonMinor;
+exports.incrementJsonMajor = incrementJsonMajor;
 
 exports.deployLambda = deployLambda;
 
