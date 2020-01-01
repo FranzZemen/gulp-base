@@ -15,7 +15,7 @@ exports.default = series(
 exports.cleanPublish = gulpBase.cleanPublish;
 
 exports.patch = series(
-  gulpBase.cleanPublish, 
+  gulpBase.cleanPublish,
   copyJS,
   gulpBase.incrementJsonPatch,
   gulpBase.copyPackageJsonToPublishDir,
