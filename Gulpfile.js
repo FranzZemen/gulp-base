@@ -19,7 +19,7 @@ exports.cleanPublish = gulpBase.cleanPublish;
 exports.patch = series(
   gulpBase.cleanPublish,
   copyJS,
-  gulpBase.incrementJsonPatch,
+  gulpBase.incrementJsonPatch, 
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
   gulpBase.cleanPublish);
