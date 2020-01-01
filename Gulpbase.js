@@ -6,6 +6,9 @@ const fs = require('fs');
 const zip = require('gulp-zip');
 const path = require('path');
 const updateLambda = require('@franzzemen/aws-scripts').updateLambda;
+const minimist = require('minimist');
+const git = require('gulp-git');
+const series = require('gulp').series;
 
 
 
@@ -190,6 +193,53 @@ function deployLambda() {
   return updateLambda(unscopedName, zipPath);
 }
 
+function cleanGitStatus(data) {
+  const fileDescriptions = data.split('\n');
+  let uncommittedFiles = [];
+  fileDescriptions.forEach(line => {
+    if(line.length > 0) {
+      const fileDescription = line.split(' ');
+      uncommittedFiles.push(fileDescription[fileDescription.length-1]);
+    }
+  });
+  console.log({uncommittedFiles:uncommittedFiles});
+  return uncommittedFiles;
+}
+
+function statusCode() {
+  return new Promise((success, error) => {
+    git.status({args: '--porcelain'}, (err, stdout) => {
+      success(cleanGitStatus(stdout));
+    });
+  })
+}
+
+function addCode() {
+
+}
+
+function commitCode() {
+  const arguments = minimist(process.argv.slice(2));
+  if(arguments.m && arguments.m.trim().length > 0) {
+    return src('./*')
+      .pipe(git.commit(arguments.m))
+  }
+}
+
+function gitCheckIn(cb) {
+  const arguments = minimist(process.argv.slice(2));
+  if(arguments.m && arguments.m.trim().length > 0) {
+    return statusCode()
+      .then(files => {
+        return src(files)
+          .pipe(git.add())
+          .pipe(git.commit(arguments.m));
+      });
+  }
+  else return Promise.reject('No source comment');
+};
+
+
 exports.srcDir = srcDir;
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
@@ -225,3 +275,6 @@ exports.incrementJsonMajor = incrementJsonMajor;
 exports.deployLambda = deployLambda;
 
 exports.publish = publish;
+
+exports.gitCheckIn = gitCheckIn;
+
