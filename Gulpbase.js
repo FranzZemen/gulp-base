@@ -293,30 +293,49 @@ async function gitCheckIn(cb) {
     return src(files)
       .pipe(git.add())
       .pipe(git.commit(arguments.m));
-    /*
-      .then(uncommittedFiles => {
-        files = uncommittedFiles;
-         return src(files)
-          .pipe(git.add());
-         //.pipe(git.commit(arguments.m));
-      })
+  }
+  else return Promise.reject('No source comment');
+};
 
-      .then(pipeReturn => {
+ function gitAdd(cb) {
+     statusCode()
+       .then(files => {
+        return src(files)
+          .pipe(git.add());
+       })
+       .then(result => {
+        setTimeout(()=>{
+          cb();
+        },100)
+       })
+       .catch(err => {
+         console.log(err, err.stack);
+         cb();
+       });
+};
+
+function gitCommit(cb) {
+  const arguments = minimist(process.argv.slice(2));
+  if(arguments.m && arguments.m.trim().length > 0) {
+    statusCode()
+      .then(files => {
         return src(files)
           .pipe(git.commit(arguments.m));
       })
-
-      .then(done => {
-        setTimeout(()=>{
+      .then(result => {
+        setTimeout(() => {
           cb();
-        }, 3000);
+        }, 100)
       })
       .catch(err => {
         console.log(err, err.stack);
-        return err;
-      });*/
+        cb();
+      });
+  } else {
+    let err = new Error('No source comment');
+    console.log(err, err.stack);
+    throw err;
   }
-  else return Promise.reject('No source comment');
 };
 
 function gitPush(cb) {
@@ -367,6 +386,8 @@ exports.deployLambda = deployLambda;
 
 exports.publish = publish;
 
+exports.gitAdd = gitAdd;
+exports.gitCommit = gitCommit;
 exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 

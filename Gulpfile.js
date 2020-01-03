@@ -21,7 +21,9 @@ exports.patch = series(
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
   gulpBase.cleanPublish,
-  gulpBase.gitCheckIn);//,
+  gulpBase.gitAdd,
+  gulpBase.gitCommit);
+  //gulpBase.gitCheckIn,
   //gulpBase.gitPush);
 
 exports.minor = series(
