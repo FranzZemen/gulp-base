@@ -34,7 +34,8 @@ exports.minor = series(
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
   gulpBase.cleanPublish,
-  gulpBase.gitCheckIn,
+  gulpBase.gitAdd,
+  gulpBase.gitCommit,
   gulpBase.gitPush);
 
 exports.major = series(
@@ -44,7 +45,8 @@ exports.major = series(
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
   gulpBase.cleanPublish,
-  gulpBase.gitCheckIn,
+  gulpBase.gitAdd,
+  gulpBase.gitCommit,
   gulpBase.gitPush);
 
 exports.npmForceCoreLibraryUpdates = gulpBase.npmForceCoreLibraryUpdates;
