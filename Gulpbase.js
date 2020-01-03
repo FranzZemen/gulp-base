@@ -286,14 +286,21 @@ function commitCode() {
   }
 }*/
 
-async function gitCheckIn(cb) {
+function gitCheckIn(cb) {
   const arguments = minimist(process.argv.slice(2));
   if(arguments.m && arguments.m.trim().length > 0) {
-    return await statusCode()
+    statusCode()
       .then(files => {
         return src(files)
           .pipe(git.add())
           .pipe(git.commit(arguments.m));
+      })
+      .then(done => {
+        cb();
+      })
+      .catch(err => {
+        console.log(err, err.stack);
+        cb();
       });
   }
   else return Promise.reject('No source comment');
