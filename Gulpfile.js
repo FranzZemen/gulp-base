@@ -22,7 +22,8 @@ exports.patch = series(
   gulpBase.publish,
   gulpBase.cleanPublish,
   gulpBase.gitAdd,
-  gulpBase.gitCommit);
+  gulpBase.gitCommit,
+  gulpBase.gitPush);
   //gulpBase.gitCheckIn,
   //gulpBase.gitPush);
 
