@@ -306,7 +306,7 @@ async function gitCheckIn(cb) {
        .then(result => {
         setTimeout(()=>{
           cb();
-        },100)
+        },1000)
        })
        .catch(err => {
          console.log(err, err.stack);
@@ -325,7 +325,7 @@ function gitCommit(cb) {
       .then(result => {
         setTimeout(() => {
           cb();
-        }, 100)
+        }, 1000)
       })
       .catch(err => {
         console.log(err, err.stack);
@@ -381,7 +381,7 @@ exports.packageLambdaRelease = packageLambdaRelease;
 exports.incrementJsonPatch = incrementJsonPatch;
 exports.incrementJsonMinor = incrementJsonMinor;
 exports.incrementJsonMajor = incrementJsonMajor;
- 
+
 exports.deployLambda = deployLambda;
 
 exports.publish = publish;
