@@ -137,6 +137,69 @@ function incrementJsonPatch(cb) {
   cb();
 }
 
+// Note this satisfies semver rules (will not update if semver rule does not allow)
+function npmUpdateProject(cb) {
+  exec('npm update',{cwd: './'}, (err, stdout, stderr) =>{
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+}
+
+function coreUpdate(package) {
+  return new Promise((resolve, reject) => {
+    exec('npm install ' + package + '@latest',{cwd: './'}, (err, stdout, stderr) =>{
+      if (err) {
+        console.log(err, erro.stack);
+        reject(err);
+      } else {
+        console.log(stdout);
+        console.log(stderr);
+        resolve(true);
+      }
+    });
+  });
+}
+
+function executeCoreUpdates(dependencyList) {
+  return new Promise(async (resolve, reject) => {
+    for (let dependency in dependencyList) {
+      if (dependency.startsWith('@franzzemen')) {
+        try {
+          console.log('Executing core update on ' + dependency);
+          let result = await coreUpdate(dependency);
+        } catch (err) {
+          console.log(err, err.stack);
+          reject(err);
+        }
+      }
+    }
+    resolve(true);
+  });
+}
+
+
+// Takes core @franzzemen libraries and forces them to update to latest
+function npmForceCoreLibraryUpdates(cb) {
+  try {
+    return new Promise(async (resolve, reject) => {
+      // Get @franzzemen dependencies
+      await executeCoreUpdates(packageJson.dependencies);
+      // Get @franzzemen dev dependencies
+      await executeCoreUpdates(packageJson.devDependencies);
+      resolve(true);
+      cb();
+    }).catch(err => {
+      console.log(err);
+      cb();
+    });
+    cb();
+  } catch (err) {
+    console.log(err);
+    cb();
+  };
+}
+
 function incrementJsonMinor(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
@@ -214,17 +277,14 @@ function statusCode() {
   })
 }
 
-function addCode() {
-
-}
-
+/*
 function commitCode() {
   const arguments = minimist(process.argv.slice(2));
   if(arguments.m && arguments.m.trim().length > 0) {
     return src('./*')
       .pipe(git.commit(arguments.m))
   }
-}
+}*/
 
 function gitCheckIn(cb) {
   const arguments = minimist(process.argv.slice(2));
@@ -269,6 +329,9 @@ exports.copyConfigToBuildDir = copyConfigToBuildDir;
 exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
 exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
+
+exports.npmUpdateProject = npmUpdateProject;
+exports.npmForceCoreLibraryUpdates = npmForceCoreLibraryUpdates;
 
 exports.npmInstallBuildDir = npmInstallBuildDir;
 exports.npmInstallLayerDir = npmInstallLayerDir;
