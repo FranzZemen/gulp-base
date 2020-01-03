@@ -374,7 +374,8 @@ exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
 exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
 
 exports.npmUpdateProject = npmUpdateProject;
-exports.npmForceCoreLibraryUpdates = npmForceCoreLibraryUpdates;
+exports.npmForceCoreLibraryUpdates = npmForceCoreLibraryUpdates; // Deprecated
+exports.npmForceUpdateProject = npmForceCoreLibraryUpdates;
 
 exports.npmInstallBuildDir = npmInstallBuildDir;
 exports.npmInstallLayerDir = npmInstallLayerDir;

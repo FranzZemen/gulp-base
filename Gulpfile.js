@@ -49,5 +49,5 @@ exports.major = series(
   gulpBase.gitCommit,
   gulpBase.gitPush);
 
-exports.npmForceCoreLibraryUpdates = gulpBase.npmForceCoreLibraryUpdates;
+exports.npmForceUpdateProject = gulpBase.npmForceUpdateProject;
 exports.npmUpdateProject = gulpBase.npmUpdateProject;
