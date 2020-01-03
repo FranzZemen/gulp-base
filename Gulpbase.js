@@ -16,9 +16,10 @@ let packageJson = null;
 let gitTimeout = null;
 let unscopedName = null;
 
-function init(package, gitTimeout=100) {
+function init(package, timeout=100) {
+  gitTimeout = timeout;
   packageJson = package;
-   unscopedName = path.parse(packageJson.name).name;
+  unscopedName = path.parse(packageJson.name).name;
   return exports;
 }
 
