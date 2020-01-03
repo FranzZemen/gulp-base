@@ -274,7 +274,7 @@ function statusCode() {
     git.status({args: '--porcelain'}, (err, stdout) => {
       success(cleanGitStatus(stdout));
     });
-  })
+  });
 }
 
 /*
@@ -286,10 +286,10 @@ function commitCode() {
   }
 }*/
 
-function gitCheckIn(cb) {
+async function gitCheckIn(cb) {
   const arguments = minimist(process.argv.slice(2));
   if(arguments.m && arguments.m.trim().length > 0) {
-    return statusCode()
+    return await statusCode()
       .then(files => {
         return src(files)
           .pipe(git.add())
