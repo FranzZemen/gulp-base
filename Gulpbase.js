@@ -286,15 +286,26 @@ function commitCode() {
   }
 }*/
 
-function gitCheckIn(cb) {
+async function gitCheckIn(cb) {
   const arguments = minimist(process.argv.slice(2));
   if(arguments.m && arguments.m.trim().length > 0) {
-    statusCode()
-      .then(files => {
+    let files = await statusCode();
+    return src(files)
+      .pipe(git.add())
+      .pipe(git.commit(arguments.m));
+    /*
+      .then(uncommittedFiles => {
+        files = uncommittedFiles;
          return src(files)
-          .pipe(git.add())
+          .pipe(git.add());
+         //.pipe(git.commit(arguments.m));
+      })
+
+      .then(pipeReturn => {
+        return src(files)
           .pipe(git.commit(arguments.m));
       })
+
       .then(done => {
         setTimeout(()=>{
           cb();
@@ -302,8 +313,8 @@ function gitCheckIn(cb) {
       })
       .catch(err => {
         console.log(err, err.stack);
-        cb();
-      });
+        return err;
+      });*/
   }
   else return Promise.reject('No source comment');
 };
