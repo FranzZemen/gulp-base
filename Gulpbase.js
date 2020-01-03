@@ -267,7 +267,7 @@ function cleanGitStatus(data) {
       uncommittedFiles.push(fileDescription[fileDescription.length-1]);
     }
   });
-  console.log({uncommittedFiles:uncommittedFiles});
+  // console.log({uncommittedFiles:uncommittedFiles});
   return uncommittedFiles;
 }
 
