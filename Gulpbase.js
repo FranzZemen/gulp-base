@@ -306,7 +306,7 @@ async function gitCheckIn(cb) {
        })
        .then(result => {
         setTimeout(()=>{
-          console.log('Awaiting ' + gitTimeout + 'ms.  If Add activity continues beyond this limit adjust through gitbase.init');
+          console.log('Awaiting ' + gitTimeout + 'ms.  Next line should be \"Finished \'gitAdd\'\" If Add activity continues beyond this limit adjust through gitbase.init');
           cb();
         },gitTimeout)
        })
@@ -326,7 +326,7 @@ function gitCommit(cb) {
       })
       .then(result => {
         setTimeout(() => {
-          console.log('Awaiting ' + gitTimeout + 'ms.  If Commit activity continues beyond this limit adjust through gitbase.init');
+          console.log('Awaiting ' + gitTimeout + 'ms.  Next line should be \"Finished \'gitCommit\'\" If Add activity continues beyond this limit adjust through gitbase.init');
           cb();
         }, gitTimeout)
       })
