@@ -12,10 +12,11 @@ const series = require('gulp').series;
 
 
 
-var packageJson = null;
+let packageJson = null;
+let gitTimeout = null;
 let unscopedName = null;
 
-function init(package) {
+function init(package, gitTimeout=100) {
   packageJson = package;
    unscopedName = path.parse(packageJson.name).name;
   return exports;
@@ -305,8 +306,9 @@ async function gitCheckIn(cb) {
        })
        .then(result => {
         setTimeout(()=>{
+          console.log('Awaiting ' + gitTimeout + 'ms.  If Add activity continues beyond this limit adjust through gitbase.init');
           cb();
-        },1000)
+        },gitTimeout)
        })
        .catch(err => {
          console.log(err, err.stack);
@@ -324,8 +326,9 @@ function gitCommit(cb) {
       })
       .then(result => {
         setTimeout(() => {
+          console.log('Awaiting ' + gitTimeout + 'ms.  If Commit activity continues beyond this limit adjust through gitbase.init');
           cb();
-        }, 1000)
+        }, gitTimeout)
       })
       .catch(err => {
         console.log(err, err.stack);
