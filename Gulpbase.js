@@ -291,13 +291,14 @@ function gitCheckIn(cb) {
   if(arguments.m && arguments.m.trim().length > 0) {
     statusCode()
       .then(files => {
-        src(files)
+         src(files)
           .pipe(git.add())
           .pipe(git.commit(arguments.m));
-        cb();
       })
       .then(done => {
-        cb();
+        setTimeout(3000,()=>{
+          cb();
+        });
       })
       .catch(err => {
         console.log(err, err.stack);
