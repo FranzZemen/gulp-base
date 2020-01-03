@@ -296,9 +296,9 @@ function gitCheckIn(cb) {
           .pipe(git.commit(arguments.m));
       })
       .then(done => {
-        setTimeout(3000,()=>{
+        setTimeout(()=>{
           cb();
-        });
+        }, 3000);
       })
       .catch(err => {
         console.log(err, err.stack);
