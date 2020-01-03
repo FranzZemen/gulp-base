@@ -291,7 +291,7 @@ function gitCheckIn(cb) {
   if(arguments.m && arguments.m.trim().length > 0) {
     statusCode()
       .then(files => {
-         src(files)
+         return src(files)
           .pipe(git.add())
           .pipe(git.commit(arguments.m));
       })
