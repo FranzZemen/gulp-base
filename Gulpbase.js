@@ -381,7 +381,7 @@ exports.packageLambdaRelease = packageLambdaRelease;
 exports.incrementJsonPatch = incrementJsonPatch;
 exports.incrementJsonMinor = incrementJsonMinor;
 exports.incrementJsonMajor = incrementJsonMajor;
-
+ 
 exports.deployLambda = deployLambda;
 
 exports.publish = publish;
