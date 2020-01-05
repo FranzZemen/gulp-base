@@ -370,6 +370,17 @@ function gitPush(cb) {
   });
 };
 
+function samClean() {
+  let functions = fs.readdirSync('./functions');
+  functions.forEach(lambdaFunction => {
+    del('./functions/' + lambdaFunction + '/release');
+  });
+  let layers = fs.readdirSync('./layers');
+  layers.forEach(layer => {
+    del('./layers/' + layer + '/nodejs/node_modules');
+  });
+}
+
 
 function _samCopyFunctionSrcToRelease(lambdaFunction) {
   return new Promise((resolve, reject)=> {
@@ -431,9 +442,8 @@ function _samNpmInstallLayer(layer) {
 }
 
 function sameRefreshLayers(cb) {
-  let functions = fs.readdirSync('./layers');
-  functions.forEach(async (layer) => {
-    del('./layers/' + layer + '/nodejs/node_modules');
+  let layers = fs.readdirSync('./layers');
+  layers.forEach(async (layer) => {
     await _samNpmInstallLayer(layer);
   });
   cb();
@@ -487,6 +497,7 @@ exports.gitCommit = gitCommit;
 exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 
+exports.samClean = samClean;
 exports.samCreateFunctionReleases = samCreateFunctionReleases;
 exports.sameRefreshLayers = sameRefreshLayers;
 
