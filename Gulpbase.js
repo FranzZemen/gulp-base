@@ -373,6 +373,7 @@ function gitPush(cb) {
 
 function _samCopyFunctionSrcToRelease(lambdaFunction) {
   return new Promise((resolve, reject)=> {
+    console.log('Copying ./functions/' + lambdaFunction + 'to  ./functions/' + lambdaFunction + '/release');
     let result = src(
       [
         './functions/' + lambdaFunction + '/src/**/*.js',
@@ -381,16 +382,6 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
     resolve(true);
   })
-}
-
-function samCopyFunctionsSrcToRelease(cb) {
-  let functions = fs.readdirSync('./functions');
-  functions.forEach(async (lambdaFunction) => {
-    console.log('Copying ./functions/' + lambdaFunction + 'to  ./functions/' + lambdaFunction + '/release');
-    await _samCopyFunctionSrcToRelease(lambdaFunction);
-    await _samNpmInstallFunctionRelease(lambdaFunction);
-  });
-  cb();
 }
 
 function _samNpmInstallFunctionRelease(lambdaFunction) {
@@ -407,6 +398,41 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
     });
   });
 }
+
+function samCreateFunctionReleases(cb) {
+  let functions = fs.readdirSync('./functions');
+  functions.forEach(async (lambdaFunction) => {
+    await _samCopyFunctionSrcToRelease(lambdaFunction);
+    await _samNpmInstallFunctionRelease(lambdaFunction);
+  });
+  cb();
+}
+
+function _samNpmInstallLayer(layer) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
+    exec('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'}, (err, stdout, stderr) =>{
+      console.log(stdout);
+      console.log(stderr);
+      if(err) {
+        reject(err)
+      } else {
+        resolve(true);
+      }
+    });
+  });
+}
+
+function sameRefreshLayers(cb) {
+  let functions = fs.readdirSync('./layers');
+  functions.forEach(async (layer) => {
+    del('./layers/' + layer + '/nodejs/node_modules');
+    await _samNpmInstallLayer(layer);
+  });
+  cb();
+}
+
+
 
 
 exports.srcDir = srcDir;
@@ -454,5 +480,5 @@ exports.gitCommit = gitCommit;
 exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 
-exports.samCopyFunctionsSrcToRelease = samCopyFunctionsSrcToRelease;
+exports.samCreateFunctionReleases = samCreateFunctionReleases;
 
