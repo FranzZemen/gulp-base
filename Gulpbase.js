@@ -399,12 +399,19 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
   });
 }
 
-function samCreateFunctionReleases(cb) {
-  let functions = fs.readdirSync('./functions');
-  functions.forEach(async (lambdaFunction) => {
-    await _samCopyFunctionSrcToRelease(lambdaFunction);
-    await _samNpmInstallFunctionRelease(lambdaFunction);
+async function _samCreateFunctionReleases(functions) {
+  return new Promise((resolve, reject)=> {
+    functions.forEach(async (lambdaFunction) => {
+      await _samCopyFunctionSrcToRelease(lambdaFunction);
+      await _samNpmInstallFunctionRelease(lambdaFunction);
+    });
+    resolve(true);
   });
+}
+
+async function samCreateFunctionReleases(cb) {
+  let functions = fs.readdirSync('./functions');
+  await _samCreateFunctionReleases();
   cb();
 }
 
