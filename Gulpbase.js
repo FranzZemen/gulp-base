@@ -167,16 +167,9 @@ function npmUpdateProject(cb) {
 
 function coreUpdate(package, cwd = './') {
   return new Promise((resolve, reject) => {
-    exec('npm install ' + package + '@latest',{cwd: cwd}, (err, stdout, stderr) =>{
-      if (err) {
-        console.log(err, erro.stack);
-        reject(err);
-      } else {
-        console.log(stdout);
-        console.log(stderr);
-        resolve(true);
-      }
-    });
+    const out = execSync('npm install ' + package + '@latest',{cwd: cwd});
+    console.log(out);
+    resolve(true);
   });
 }
 
