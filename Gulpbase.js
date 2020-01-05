@@ -382,7 +382,7 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
       [
         './functions/' + lambdaFunction + '/src/**/*.js',
         './functions/' + lambdaFunction + '/src/**/*.json',
-        './functions/' + lambdaFunction + '/package.json'], {base: 'src/'})
+        './functions/' + lambdaFunction + '/package.json'], {base: './functions' + lambdaFunction + '/src/'})
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
     resolve(true);
   })
