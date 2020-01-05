@@ -413,6 +413,7 @@ async function _samNpmForceUpdateFunction(lambdaFunction) {
   const functionPackageJson = JSON.parse(fs.readFileSync('./functions/' + lambdaFunction + '/package.json',{encoding: 'utf8'}).toString());
   console.log(functionPackageJson);
   await executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction);
+  await executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction);
 }
 
 async function _samNpmForceUpdateFunctionProject(functions) {
