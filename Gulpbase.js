@@ -167,7 +167,7 @@ function npmUpdateProject(cb) {
 
 function coreUpdate(package, cwd = './') {
   return new Promise((resolve, reject) => {
-    const out = execSync('npm install ' + package + '@latest',{cwd: cwd});
+    const out = execSync('npm install ' + package + '@latest',{cwd: cwd}, {encoding: 'utf8'});
     console.log(out);
     resolve(true);
   });
