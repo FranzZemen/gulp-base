@@ -464,7 +464,7 @@ function samRefreshLayers(cb) {
 function samBuild(cb) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"sam build');
-    execSync('sam build',{cwd: './'});
+    console.log(execSync('sam build',{cwd: './', encoding : 'utf8'}).toString());
     resolve(true);
   });
 }
@@ -472,7 +472,7 @@ function samBuild(cb) {
 function samDeploy(cb) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"sam deploy');
-    execSync('sam build',{cwd: './'});
+    console.log(execSync('sam deploy',{cwd: './', encoding : 'utf8'}).toString());
     resolve(true);
   });
 }
