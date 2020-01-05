@@ -428,7 +428,7 @@ function samCreateFunctionsReleases(cb) {
     if(merged) {
       merged.add(thisStream);
     } else if (last) {
-      merged = merged(last, thisStream);
+      merged = merge(last, thisStream);
     } else {
       last = thisStream;
     }
