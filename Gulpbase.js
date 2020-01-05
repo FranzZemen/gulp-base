@@ -11,8 +11,7 @@ const minimist = require('minimist');
 const git = require('gulp-git');
 const series = require('gulp').series;
 const debug = require('gulp-debug');
-const gulpCopy = require('gulp-copy');
-
+const merge = require('merge-stream');
 
 
 
@@ -376,24 +375,6 @@ function samClean(cb) {
   cb();
 }
 
-
-function _samCopyFunctionSrcToRelease(lambdaFunction) {
-  return new Promise((resolve, reject) => {
-    console.log('Copying ./functions/' + lambdaFunction + ' to  ./functions/' + lambdaFunction + '/release');
-    let result = src('./functions/' + lambdaFunction + '/package.json')
-
-    //  [
-      //  './functions/' + lambdaFunction + '/src/**/*.js',
-//        './functions/' + lambdaFunction + '/src/**/*.json',
-  //      './functions/' + lambdaFunction + '/package.json'])
-
-      .pipe(debug())
-      .pipe(gulpCopy('./functions/' + lambdaFunction + '/release'));
-      //.pipe(dest('./functions/' + lambdaFunction + '/release'));
-    resolve(true);
-  })
-}
-
 function _samNpmInstallFunctionRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
@@ -424,13 +405,6 @@ async function samNpmForceUpdateFunctionsProject(cb) {
   cb();
 }
 
-function _samCreateFunctionsReleases(functions) {
-  let promises = [];
-  functions.forEach((lambdaFunction) => {
-    promises.push(_samCopyFunctionSrcToRelease(lambdaFunction));
-  });
-  return Promise.all(promises);
-}
 
 function _samInstallFunctionsReleases(functions) {
   let npmPromises = [];
@@ -440,10 +414,32 @@ function _samInstallFunctionsReleases(functions) {
   return Promise.all(npmPromises);
 }
 
-async function samCreateFunctionsReleases(cb) {
+function samCreateFunctionsReleases(cb) {
   let functions = fs.readdirSync('./functions');
-  await _samCreateFunctionsReleases(functions);
-  cb();
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    let thisStream = src(
+      [
+        './functions/' + lambdaFunction + '/src/**/*.js',
+        './functions/' + lambdaFunction + '/src/**/*.json',
+        './functions/' + lambdaFunction + '/package.json'])
+      .pipe(debug())
+      .pipe(dest('./functions/' + lambdaFunction + '/release'));
+    if(merged) {
+      merged.add(thisStream);
+    } else if (last) {
+      merged = merged(last, thisStream);
+    } else {
+      last = thisStream;
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
 }
 
 async function samInstallFunctionsReleases(cb) {
