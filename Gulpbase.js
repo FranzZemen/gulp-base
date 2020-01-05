@@ -1,6 +1,7 @@
 const src = require('gulp').src;
 const dest = require('gulp').dest;
 const exec = require('child_process').exec;
+const execSync = require('child_process').execSync;
 const del = require('del');
 const fs = require('fs');
 const zip = require('gulp-zip');
@@ -403,6 +404,9 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
 function _samNpmInstallFunctionRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
+    console.log(execSync('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'}));
+    resolve(true);
+    /*
     exec('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'}, (err, stdout, stderr) =>{
       console.log(stdout);
       console.log(stderr);
@@ -412,6 +416,7 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
         resolve(true);
       }
     });
+     */
   });
 }
 
@@ -434,6 +439,9 @@ async function samCreateFunctionReleases(cb) {
 function _samNpmInstallLayer(layer) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
+    console.log(execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'}));
+    resolve(true);
+    /*
     exec('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'}, (err, stdout, stderr) =>{
       console.log(stdout);
       console.log(stderr);
@@ -442,7 +450,7 @@ function _samNpmInstallLayer(layer) {
       } else {
         resolve(true);
       }
-    });
+    });*/
   });
 }
 
