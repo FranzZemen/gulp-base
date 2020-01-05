@@ -372,12 +372,16 @@ function gitPush(cb) {
 
 function samClean(cb) {
   let functions = fs.readdirSync('./functions');
-  functions.forEach(lambdaFunction => {
-    del('./functions/' + lambdaFunction + '/release');
+  functions.forEach(async lambdaFunction => {
+    await (async => {
+      del('./functions/' + lambdaFunction + '/release');
+    });
   });
   let layers = fs.readdirSync('./layers');
-  layers.forEach(layer => {
-    del('./layers/' + layer + '/nodejs/node_modules');
+  layers.forEach(async layer => {
+    await (async => {
+      del('./layers/' + layer + '/nodejs/node_modules');
+    });
   });
   cb();
 }
