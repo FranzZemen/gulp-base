@@ -389,8 +389,8 @@ function samCopyFunctionsSrcToRelease(cb) {
     console.log('Copying ./functions/' + lambdaFunction + ' ./functions/' + lambdaFunction + '/release');
     await _samCopyFunctionSrcToRelease(lambdaFunction);
     await _samNpmInstallFunctionRelease(lambdaFunction);
-    cb();
   });
+  cb();
 }
 
 function _samNpmInstallFunctionRelease(lambdaFunction) {
