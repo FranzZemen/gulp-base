@@ -370,7 +370,7 @@ function gitPush(cb) {
   });
 };
 
-function samClean() {
+function samClean(cb) {
   let functions = fs.readdirSync('./functions');
   functions.forEach(lambdaFunction => {
     del('./functions/' + lambdaFunction + '/release');
@@ -379,6 +379,7 @@ function samClean() {
   layers.forEach(layer => {
     del('./layers/' + layer + '/nodejs/node_modules');
   });
+  cb();
 }
 
 
