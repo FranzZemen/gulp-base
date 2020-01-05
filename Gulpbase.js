@@ -404,19 +404,8 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
 function _samNpmInstallFunctionRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
-    console.log(execSync('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'}));
+    execSync('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'});
     resolve(true);
-    /*
-    exec('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'}, (err, stdout, stderr) =>{
-      console.log(stdout);
-      console.log(stderr);
-      if(err) {
-        reject(err)
-      } else {
-        resolve(true);
-      }
-    });
-     */
   });
 }
 
@@ -439,18 +428,8 @@ async function samCreateFunctionReleases(cb) {
 function _samNpmInstallLayer(layer) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
-    console.log(execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'}));
+    execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'});
     resolve(true);
-    /*
-    exec('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'}, (err, stdout, stderr) =>{
-      console.log(stdout);
-      console.log(stderr);
-      if(err) {
-        reject(err)
-      } else {
-        resolve(true);
-      }
-    });*/
   });
 }
 
@@ -465,15 +444,8 @@ function samRefreshLayers(cb) {
 function samBuild(cb) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"sam build');
-    exec('sam build',{cwd: './'}, (err, stdout, stderr) =>{
-      console.log(stdout);
-      console.log(stderr);
-      if(err) {
-        reject(err)
-      } else {
-        resolve(true);
-      }
-    });
+    execSync('sam build',{cwd: './'});
+    resolve(true);
   });
 }
 
