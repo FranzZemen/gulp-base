@@ -410,7 +410,7 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
 }
 
 async function _samNpmForceUpdateFunction(lambdaFunction) {
-  await executeCoreUpdates(require('./functions/' + lambdaFunction + './package.json').dependencies, './functions/' + lambdaFunction);
+  await executeCoreUpdates(require('./functions/' + lambdaFunction + '/package.json').dependencies, './functions/' + lambdaFunction);
 }
 
 async function _samNpmForceUpdateFunctionProject(functions) {
