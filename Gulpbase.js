@@ -411,7 +411,7 @@ async function _samCreateFunctionReleases(functions) {
 
 async function samCreateFunctionReleases(cb) {
   let functions = fs.readdirSync('./functions');
-  await _samCreateFunctionReleases();
+  await _samCreateFunctionReleases(functions);
   cb();
 }
 
