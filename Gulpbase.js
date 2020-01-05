@@ -449,6 +449,13 @@ function samBuild(cb) {
   });
 }
 
+function samDeploy(cb) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"sam deploy');
+    execSync('sam build',{cwd: './'});
+    resolve(true);
+  });
+}
 
 
 
@@ -501,4 +508,5 @@ exports.samClean = samClean;
 exports.samCreateFunctionReleases = samCreateFunctionReleases;
 exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
+exports.samDeploy = samDeploy;
 
