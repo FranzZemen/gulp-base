@@ -410,7 +410,8 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
 }
 
 async function _samNpmForceUpdateFunction(lambdaFunction) {
-  const functionPackageJson = require('./functions/' + lambdaFunction + '/package.json');
+  const packageJson = fs.readFileSync('./functions/' + lambdaFunction + '/package.json');
+  console.log(packageJson);
   await executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction);
 }
 
