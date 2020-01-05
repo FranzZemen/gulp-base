@@ -446,12 +446,27 @@ function _samNpmInstallLayer(layer) {
   });
 }
 
-function sameRefreshLayers(cb) {
+function samRefreshLayers(cb) {
   let layers = fs.readdirSync('./layers');
   layers.forEach(async (layer) => {
     await _samNpmInstallLayer(layer);
   });
   cb();
+}
+
+function samBuild(cb) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"sam build');
+    exec('sam build',{cwd: './'}, (err, stdout, stderr) =>{
+      console.log(stdout);
+      console.log(stderr);
+      if(err) {
+        reject(err)
+      } else {
+        resolve(true);
+      }
+    });
+  });
 }
 
 
@@ -504,5 +519,6 @@ exports.gitPush = gitPush;
 
 exports.samClean = samClean;
 exports.samCreateFunctionReleases = samCreateFunctionReleases;
-exports.sameRefreshLayers = sameRefreshLayers;
+exports.samRefreshLayers = samRefreshLayers;
+exports.samBuild = samBuild;
 
