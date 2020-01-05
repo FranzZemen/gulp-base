@@ -182,21 +182,6 @@ function executeCoreUpdates(dependencyList, cwd = './') {
     }
   }
   return Promise.all(promises);
-  /*
-  return new Promise(async (resolve, reject) => {
-    for (let dependency in dependencyList) {
-      if (dependency.startsWith('@franzzemen')) {
-        try {
-          console.log('Executing core update on ' + dependency);
-          let result = await coreUpdate(dependency, cwd);
-        } catch (err) {
-          console.log(err, err.stack);
-          reject(err);
-        }
-      }
-    }
-    resolve(true);
-  });*/
 }
 
 
@@ -220,7 +205,6 @@ function npmForceCoreLibraryUpdates(cb) {
     console.log(err);
     cb();
   }
-  ;
 }
 
 function incrementJsonMinor(cb) {
@@ -398,7 +382,7 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
       [
         './functions/' + lambdaFunction + '/src/**/*.js',
         './functions/' + lambdaFunction + '/src/**/*.json',
-        './functions/' + lambdaFunction + '/package.json'])
+        './functions/' + lambdaFunction + '/package.json'], {base: 'src/'})
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
     resolve(true);
   })
