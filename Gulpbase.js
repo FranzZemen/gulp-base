@@ -10,6 +10,7 @@ const updateLambda = require('@franzzemen/aws-scripts').updateLambda;
 const minimist = require('minimist');
 const git = require('gulp-git');
 const series = require('gulp').series;
+const gulpCopy = require('gulp-copy');
 
 
 
@@ -383,7 +384,7 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
         './functions/' + lambdaFunction + '/src/**/*.js',
         './functions/' + lambdaFunction + '/src/**/*.json',
         './functions/' + lambdaFunction + '/package.json'])
-      .pipe(dest('dest'));
+      .pipe(gulpCopy('./functions/' + lambdaFunction + '/release'));
       //.pipe(dest('./functions/' + lambdaFunction + '/release'));
     resolve(true);
   })
