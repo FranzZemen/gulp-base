@@ -395,7 +395,7 @@ function samCopyFunctionsSrcToRelease(cb) {
 
 function _samNpmInstallFunctionRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
-    exec('npm install --only=prod --no-package-lock',{cwd: buildDir}, (err, stdout, stderr) =>{
+    exec('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'}, (err, stdout, stderr) =>{
       console.log(stdout);
       console.log(stderr);
       if(err) {
