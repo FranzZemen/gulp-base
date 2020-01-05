@@ -407,7 +407,7 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
 function _samNpmInstallFunctionRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
-    execSync('npm install --only=prod --no-package-lock', {cwd: './functions/' + lambdaFunction + '/release'});
+    console.log(execSync('npm install --only=prod --no-package-lock', {cwd: './functions/' + lambdaFunction + '/release'}, {encoding: 'utf'}).toString());
     resolve(true);
   });
 }
@@ -418,13 +418,6 @@ function _samNpmForceUpdateFunction(lambdaFunction) {
   promises.push(executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction));
   promises.push(executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction));
   return Promise.all(promises);
-  /*
-  return new Promise(async(resolve, reject)=>{
-    const functionPackageJson = JSON.parse(fs.readFileSync('./functions/' + lambdaFunction + '/package.json',{encoding: 'utf8'}).toString());
-    await executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction);
-    await executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction);
-    resolve(true);
-  });*/
 }
 
 async function _samNpmForceUpdateFunctionProject(functions) {
@@ -433,13 +426,6 @@ async function _samNpmForceUpdateFunctionProject(functions) {
     promises.push(_samNpmForceUpdateFunction(lambdaFunction));
   });
   return Promise.all(promises);
-  /*
-  return new Promise((resolve, reject)=> {
-    functions.forEach(async (lambdaFunction) => {
-      await _samNpmForceUpdateFunction(lambdaFunction);
-    });
-    resolve(true);
-  });*/
 }
 
 async function samNpmForceUpdateFunctionsProject(cb) {
@@ -448,14 +434,19 @@ async function samNpmForceUpdateFunctionsProject(cb) {
   cb();
 }
 
-async function _samCreateFunctionReleases(functions) {
-  return new Promise((resolve, reject)=> {
-    functions.forEach(async (lambdaFunction) => {
-      await _samCopyFunctionSrcToRelease(lambdaFunction);
-      await _samNpmInstallFunctionRelease(lambdaFunction);
-    });
-    resolve(true);
+function _samCreateFunctionReleases(functions) {
+  let promises = [];
+  functions.forEach((lambdaFunction) => {
+    promises.push(_samCopyFunctionSrcToRelease(lambdaFunction));
   });
+  return Promise.all(promises)
+    .then(()=>{
+      let npmPromises = [];
+      functions.forEach( (lambdaFunction) => {
+        npmPromises.push(_samNpmInstallFunctionRelease(lambdaFunction));
+      });
+      return Promise.all(npmPromises);
+    });
 }
 
 async function samCreateFunctionReleases(cb) {
