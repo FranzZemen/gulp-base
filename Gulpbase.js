@@ -370,10 +370,25 @@ function gitPush(cb) {
   });
 };
 
-function samCopyFunctionSrcToRelease(cb) {
-  let functions = fs.readdirSync('./functions');
-  console.log(functions);
+
+function _samCopyFunctionSrcToRelease(lambdaFunction) {
+  return new Promise((resolve, reject)=> {
+    let result = src(
+      [
+        './functions/' + lambdaFunction + '/src/**/*.js',
+        './functions/' + lambdaFunction + '/src/**/*.json',
+        './functions/' + lambdaFunction + '/package.json'])
+      .pipe(dest('./functions/' + lambdaFunction + '/release'));
+  })
 }
+
+function samCopyFunctionsSrcToRelease(cb) {
+  let functions = fs.readdirSync('./functions');
+  functions.forEach(async (lambdaFunction) => {
+    await _samCopyFunctionSrcToRelease(lambdaFunction);
+  });
+}
+
 
 
 exports.srcDir = srcDir;
@@ -421,5 +436,5 @@ exports.gitCommit = gitCommit;
 exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 
-exports.samCopyFunctionSrcToRelease = samCopyFunctionSrcToRelease;
-  
+exports.samCopyFunctionsSrcToRelease = samCopyFunctionsSrcToRelease;
+
