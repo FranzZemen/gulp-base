@@ -370,7 +370,7 @@ function gitPush(cb) {
   });
 };
 
-function samCopySrc(cb) {
+function samCopyFunctionSrcToRelease(cb) {
   let functions = fs.readdirSync('./functions');
   console.log(functions);
 }
@@ -421,3 +421,5 @@ exports.gitCommit = gitCommit;
 exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 
+exports.samCopyFunctionSrcToRelease = samCopyFunctionSrcToRelease;
+  
