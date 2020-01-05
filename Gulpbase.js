@@ -12,16 +12,10 @@ const series = require('gulp').series;
 
 
 
+
 let packageJson = null;
 let gitTimeout = null;
 let unscopedName = null;
-
-function init(package, timeout=100) {
-  gitTimeout = timeout;
-  packageJson = package;
-  unscopedName = path.parse(packageJson.name).name;
-  return exports;
-}
 
 const srcDir = './src';
 const buildDir = './build';
@@ -29,6 +23,12 @@ const releaseDir = './release';
 const publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
+function init(package, timeout=100) {
+  gitTimeout = timeout;
+  packageJson = package;
+  unscopedName = path.parse(packageJson.name).name;
+  return exports;
+}
 
 function cleanBuild() {
   return del(buildDir);
@@ -57,6 +57,10 @@ function copySrcJsToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
+/**
+ * @deprecated
+ * @returns {*}
+ */
 function copySrcJsToLambdaLayerDir () {
   return src(srcDir + '/**/*.js')
     .pipe(dest(lambdaLayerDir));
@@ -92,6 +96,10 @@ function copyPackageJsonToPublishDir(cb) {
   cb();
 }
 
+/**
+ * @deprecated
+ * @param cb
+ */
 function copyPackageJsonToLambdaLayerDir(cb) {
   try {
     fs.mkdirSync(buildDir);
@@ -113,12 +121,20 @@ function copyPackageJsonToLambdaLayerDir(cb) {
   cb();
 }
 
+/**
+ * @deprecated
+ * @returns {*}
+ */
 function packageLayerRelease() {
   return src(buildDir + '/**/*.*')
     .pipe(zip(unscopedName + '.zip'))
     .pipe(dest(releaseDir));
 }
 
+/**
+ * @deprecated
+ * @returns {*}
+ */
 function packageLambdaRelease() {
   return src(buildDir + '/**/*.*')
     .pipe(zip(unscopedName + '.zip'))
@@ -252,6 +268,10 @@ function publish(cb) {
   });
 }
 
+/**
+ * @deprecated
+ * @returns {*}
+ */
 function deployLambda() {
   const zipPath =  path.resolve(releaseDir + '/' + unscopedName + '.zip');
   console.log('Zip path: ' + zipPath);
@@ -349,6 +369,11 @@ function gitPush(cb) {
     cb();
   });
 };
+
+function samCopySrc(cb) {
+  let functions = fs.readdirSync('./functions');
+  console.log(functions);
+}
 
 
 exports.srcDir = srcDir;
