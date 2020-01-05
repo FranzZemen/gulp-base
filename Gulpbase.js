@@ -481,4 +481,5 @@ exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 
 exports.samCreateFunctionReleases = samCreateFunctionReleases;
+exports.sameRefreshLayers = sameRefreshLayers;
 
