@@ -165,9 +165,9 @@ function npmUpdateProject(cb) {
   });
 }
 
-function coreUpdate(package) {
+function coreUpdate(package, cwd = './') {
   return new Promise((resolve, reject) => {
-    exec('npm install ' + package + '@latest',{cwd: './'}, (err, stdout, stderr) =>{
+    exec('npm install ' + package + '@latest',{cwd: cwd}, (err, stdout, stderr) =>{
       if (err) {
         console.log(err, erro.stack);
         reject(err);
@@ -180,13 +180,13 @@ function coreUpdate(package) {
   });
 }
 
-function executeCoreUpdates(dependencyList) {
+function executeCoreUpdates(dependencyList, cwd = './') {
   return new Promise(async (resolve, reject) => {
     for (let dependency in dependencyList) {
       if (dependency.startsWith('@franzzemen')) {
         try {
           console.log('Executing core update on ' + dependency);
-          let result = await coreUpdate(dependency);
+          let result = await coreUpdate(dependency, cwd);
         } catch (err) {
           console.log(err, err.stack);
           reject(err);
@@ -409,6 +409,25 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
   });
 }
 
+async function _samNpmForceUpdateFunction(lambdaFunction) {
+  await executeCoreUpdates(require('./functions/' + lambdaFunction + './package.json').dependencies, './functions/' + lambdaFunction);
+}
+
+async function _samNpmForceUpdateFunctionProject(functions) {
+  return new Promise((resolve, reject)=> {
+    functions.forEach(async (lambdaFunction) => {
+      await _samNpmForceUpdateFunction(lambdaFunction);
+    });
+    resolve(true);
+  });
+}
+
+async function samNpmForceUpdateFunctionsProject(cb) {
+  let functions = fs.readdirSync('./functions');
+  await _samNpmForceUpdateFunctionProject(functions);
+  cb();
+}
+
 async function _samCreateFunctionReleases(functions) {
   return new Promise((resolve, reject)=> {
     functions.forEach(async (lambdaFunction) => {
@@ -505,6 +524,7 @@ exports.gitCheckIn = gitCheckIn;
 exports.gitPush = gitPush;
 
 exports.samClean = samClean;
+exports.samNpmForceUpdateFunctionsProject = samNpmForceUpdateFunctionsProject;
 exports.samCreateFunctionReleases = samCreateFunctionReleases;
 exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
