@@ -379,16 +379,33 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
         './functions/' + lambdaFunction + '/src/**/*.json',
         './functions/' + lambdaFunction + '/package.json'])
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
+    resolve(true);
   })
 }
 
 function samCopyFunctionsSrcToRelease(cb) {
   let functions = fs.readdirSync('./functions');
   functions.forEach(async (lambdaFunction) => {
+    console.log('Copying ./functions/' + lambdaFunction + ' ./functions/' + lambdaFunction + '/release');
     await _samCopyFunctionSrcToRelease(lambdaFunction);
+    await _samNpmInstallFunctionRelease(lambdaFunction);
+    cb();
   });
 }
 
+function _samNpmInstallFunctionRelease(lambdaFunction) {
+  return new Promise((resolve, reject) => {
+    exec('npm install --only=prod --no-package-lock',{cwd: buildDir}, (err, stdout, stderr) =>{
+      console.log(stdout);
+      console.log(stderr);
+      if(err) {
+        reject(err)
+      } else {
+        resolve(true);
+      }
+    });
+  });
+}
 
 
 exports.srcDir = srcDir;
