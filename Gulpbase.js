@@ -410,10 +410,12 @@ function _samNpmInstallFunctionRelease(lambdaFunction) {
 }
 
 async function _samNpmForceUpdateFunction(lambdaFunction) {
-  const functionPackageJson = JSON.parse(fs.readFileSync('./functions/' + lambdaFunction + '/package.json',{encoding: 'utf8'}).toString());
-  console.log(functionPackageJson);
-  await executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction);
-  await executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction);
+  return new Promise(async(resolve, reject)=>{
+    const functionPackageJson = JSON.parse(fs.readFileSync('./functions/' + lambdaFunction + '/package.json',{encoding: 'utf8'}).toString());
+    await executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction);
+    await executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction);
+    resolve(true);
+  });
 }
 
 async function _samNpmForceUpdateFunctionProject(functions) {
