@@ -393,7 +393,7 @@ function samClean(cb) {
 
 function _samCopyFunctionSrcToRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
-    console.log('Copying ./functions/' + lambdaFunction + 'to  ./functions/' + lambdaFunction + '/release');
+    console.log('Copying ./functions/' + lambdaFunction + ' to  ./functions/' + lambdaFunction + '/release');
     let result = src(
       [
         './functions/' + lambdaFunction + '/src/**/*.js',
@@ -434,24 +434,31 @@ async function samNpmForceUpdateFunctionsProject(cb) {
   cb();
 }
 
-function _samCreateFunctionReleases(functions) {
+function _samCreateFunctionsReleases(functions) {
   let promises = [];
   functions.forEach((lambdaFunction) => {
     promises.push(_samCopyFunctionSrcToRelease(lambdaFunction));
   });
-  return Promise.all(promises)
-    .then(()=>{
-      let npmPromises = [];
-      functions.forEach( (lambdaFunction) => {
-        npmPromises.push(_samNpmInstallFunctionRelease(lambdaFunction));
-      });
-      return Promise.all(npmPromises);
-    });
+  return Promise.all(promises);
 }
 
-async function samCreateFunctionReleases(cb) {
+function _samInstallFunctionsReleases(functions) {
+  let npmPromises = [];
+  functions.forEach( (lambdaFunction) => {
+    npmPromises.push(_samNpmInstallFunctionRelease(lambdaFunction));
+  });
+  return Promise.all(npmPromises);
+}
+
+async function samCreateFunctionsReleases(cb) {
   let functions = fs.readdirSync('./functions');
-  await _samCreateFunctionReleases(functions);
+  await _samCreateFunctionsReleases(functions);
+  cb();
+}
+
+async function samInstallFunctionsReleases(cb) {
+  let functions = fs.readdirSync('./functions');
+  await _samInstallFunctionsReleases(functions);
   cb();
 }
 
@@ -536,7 +543,8 @@ exports.gitPush = gitPush;
 
 exports.samClean = samClean;
 exports.samNpmForceUpdateFunctionsProject = samNpmForceUpdateFunctionsProject;
-exports.samCreateFunctionReleases = samCreateFunctionReleases;
+exports.samCreateFunctionsReleases = samCreateFunctionsReleases;
+exports.samInstallFunctionsReleases = samInstallFunctionsReleases;
 exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
 exports.samDeploy = samDeploy;
