@@ -459,7 +459,8 @@ function _samNpmInstallLayer(layer) {
 function samRefreshLayers(cb) {
   let layers = fs.readdirSync('./layers');
   layers.forEach(async (layer) => {
-    await _samNpmInstallLayer(layer);
+    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
+    execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'});
   });
   cb();
 }
