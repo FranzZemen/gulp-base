@@ -386,7 +386,7 @@ function _samCopyFunctionSrcToRelease(lambdaFunction) {
 function samCopyFunctionsSrcToRelease(cb) {
   let functions = fs.readdirSync('./functions');
   functions.forEach(async (lambdaFunction) => {
-    console.log('Copying ./functions/' + lambdaFunction + ' ./functions/' + lambdaFunction + '/release');
+    console.log('Copying ./functions/' + lambdaFunction + 'to  ./functions/' + lambdaFunction + '/release');
     await _samCopyFunctionSrcToRelease(lambdaFunction);
     await _samNpmInstallFunctionRelease(lambdaFunction);
   });
@@ -395,6 +395,7 @@ function samCopyFunctionsSrcToRelease(cb) {
 
 function _samNpmInstallFunctionRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
+    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
     exec('npm install --only=prod --no-package-lock',{cwd: './functions/' + lambdaFunction + '/release'}, (err, stdout, stderr) =>{
       console.log(stdout);
       console.log(stderr);
