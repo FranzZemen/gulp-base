@@ -380,11 +380,13 @@ function samClean(cb) {
 function _samCopyFunctionSrcToRelease(lambdaFunction) {
   return new Promise((resolve, reject) => {
     console.log('Copying ./functions/' + lambdaFunction + ' to  ./functions/' + lambdaFunction + '/release');
-    let result = src(
-      [
-        './functions/' + lambdaFunction + '/src/**/*.js',
-        './functions/' + lambdaFunction + '/src/**/*.json',
-        './functions/' + lambdaFunction + '/package.json'])
+    let result = src('./functions/' + lambdaFunction + '/package.json')
+
+    //  [
+      //  './functions/' + lambdaFunction + '/src/**/*.js',
+//        './functions/' + lambdaFunction + '/src/**/*.json',
+  //      './functions/' + lambdaFunction + '/package.json'])
+
       .pipe(debug())
       .pipe(gulpCopy('./functions/' + lambdaFunction + '/release'));
       //.pipe(dest('./functions/' + lambdaFunction + '/release'));
