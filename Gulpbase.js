@@ -419,7 +419,7 @@ function samCreateFunctionsReleases(cb) {
         './functions/' + lambdaFunction + '/src/**/*.js',
         './functions/' + lambdaFunction + '/src/**/*.json',
         './functions/' + lambdaFunction + '/package.json',
-        './functions/' + lambdaFunction + 'src/**/*.crt'])
+        './functions/' + lambdaFunction + '/src/**/*.crt'])
       .pipe(debug())
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
     if(merged) {
