@@ -387,6 +387,14 @@ function _samNpmForceUpdateFunction(lambdaFunction) {
   return Promise.all(promises);
 }
 
+function _samNpmForceUpdateLayer(layer) {
+  let promises = [];
+  const layerPackageJson = JSON.parse(fs.readFileSync('./layers/' + layer + '/nodejs/package.json', {encoding: 'utf8'}).toString());
+  promises.push(executeCoreUpdates(layerPackageJson.dependencies, './layers/' + layer + '/nodejs'));
+  promises.push(executeCoreUpdates(layerPackageJson.devDependencies, './layers/' + layer + '/nodejs'));
+  return Promise.all(promises);
+}
+
 async function _samNpmForceUpdateFunctionProject(functions) {
   let promises = [];
   functions.forEach( (lambdaFunction) => {
@@ -395,9 +403,24 @@ async function _samNpmForceUpdateFunctionProject(functions) {
   return Promise.all(promises);
 }
 
+async function _samNpmForceUpdateLayerProject(layers) {
+  let promises = [];
+  layers.forEach( (layer) => {
+    promises.push(_samNpmForceUpdateLayer(layer));
+  });
+  return Promise.all(promises);
+}
+
+
 async function samNpmForceUpdateFunctionsProject(cb) {
   let functions = fs.readdirSync('./functions');
   await _samNpmForceUpdateFunctionProject(functions);
+  cb();
+}
+
+async function samNpmForceUpdateLayersProject(cb) {
+  let layers = fs.readdirSync('./layers');
+  await _samNpmForceUpdateLayerProject(layers);
   cb();
 }
 
@@ -527,6 +550,7 @@ exports.gitPush = gitPush;
 
 exports.samClean = samClean;
 exports.samNpmForceUpdateFunctionsProject = samNpmForceUpdateFunctionsProject;
+exports.samNpmForceUpdateLayersProject = samNpmForceUpdateLayersProject;
 exports.samCreateFunctionsReleases = samCreateFunctionsReleases;
 exports.samInstallFunctionsReleases = samInstallFunctionsReleases;
 exports.samRefreshLayers = samRefreshLayers;
