@@ -12,13 +12,14 @@ const git = require('gulp-git');
 const series = require('gulp').series;
 const debug = require('gulp-debug');
 const merge = require('merge-stream');
-
+const ts = require('gulp-typescript');
 
 
 let packageJson = null;
 let gitTimeout = null;
 let unscopedName = null;
 
+const tsSrcDir = './ts-src';
 const srcDir = './src';
 const buildDir = './build';
 const releaseDir = './release';
@@ -42,6 +43,13 @@ function cleanRelease() {
 
 function cleanPublish() {
   return del(publishDir);
+}
+
+function transpileTypescriptToBuildDir() {
+  const tsProject = ts.createProject('tsconfig.json');
+  return src('ts-src/**/*.ts')
+    .pipe(tsProject())
+    .pipe(dest(buildDir));
 }
 
 function copySrcJsToBuildDir() {
@@ -502,7 +510,7 @@ function samDeploy(cb) {
 }
 
 
-
+exports.tsScrDir = tsSrcDir;
 exports.srcDir = srcDir;
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
@@ -513,6 +521,8 @@ exports.init = init;
 exports.cleanBuild = cleanBuild;
 exports.cleanRelease = cleanRelease;
 exports.cleanPublish = cleanPublish;
+
+exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
 
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;

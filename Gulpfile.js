@@ -1,6 +1,5 @@
 const gulpBase = require ('./Gulpbase').init(require('./package.json'));
 const {src, dest, series} = require('gulp');
-
 // For this one Npm package, src (Gulpbase.js) is not in src, so need local copy function.
 function copyJS() {
 return src('./Gulpbase.js')
@@ -9,6 +8,8 @@ return src('./Gulpbase.js')
 
 exports.default = series(
   gulpBase.cleanRelease,
+  gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
+  gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
   copyJS,
   gulpBase.copyPackageJsonToPublishDir);
 
