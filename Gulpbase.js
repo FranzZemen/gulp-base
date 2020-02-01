@@ -20,6 +20,7 @@ let gitTimeout = null;
 let unscopedName = null;
 
 const tsSrcDir = './ts-src';
+const tsDeclarationDir = './ts-d';
 const srcDir = './src';
 const buildDir = './build';
 const releaseDir = './release';
@@ -69,6 +70,11 @@ function copyBuildJsToPublishDir() {
 
 function copySrcJsToPublishDir ()  {
   return src(srcDir + '/**/*.js')
+    .pipe(dest(publishDir));
+};
+
+function copyTsDeclarationToPublishDir ()  {
+  return src(tsDeclarationDir + '/**/*.d.ts')
     .pipe(dest(publishDir));
 };
 
@@ -516,6 +522,7 @@ function samDeploy(cb) {
 
 
 exports.tsScrDir = tsSrcDir;
+exports.tsDeclarationDir = tsDeclarationDir;
 exports.srcDir = srcDir;
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
@@ -528,6 +535,8 @@ exports.cleanRelease = cleanRelease;
 exports.cleanPublish = cleanPublish;
 
 exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
+
+exports.copyTsDeclarationToPublishDir = copyTsDeclarationToPublishDir;
 
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
