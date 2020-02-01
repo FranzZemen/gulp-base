@@ -62,6 +62,11 @@ function copySrcJsToReleaseDir ()  {
     .pipe(dest(releaseDir));
 };
 
+function copyBuildJsToPublishDir() {
+  return src(buildDir + '/**/*.js')
+    .pipe(dest(publishDir));
+}
+
 function copySrcJsToPublishDir ()  {
   return src(srcDir + '/**/*.js')
     .pipe(dest(publishDir));
@@ -528,6 +533,8 @@ exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
 exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;
+
+exports.copyBuildJsToPublishDir = copyBuildJsToPublishDir;
 
 exports.copyConfigToBuildDir = copyConfigToBuildDir;
 
