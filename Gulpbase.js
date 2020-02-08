@@ -21,7 +21,9 @@ let unscopedName = null;
 
 const tsSrcDir = './ts-src';
 const tsTestDir = './ts-test';
-const tsDeclarationDir = './ts-d';
+
+// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
+// const tsDeclarationDir = './ts-d';
 const srcDir = './src';
 const testDir = './test';
 const testingDir = './testing';
@@ -98,10 +100,11 @@ function copySrcJsToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
-function copyTsDeclarationToPublishDir ()  {
-  return src(tsDeclarationDir + '/**/*.d.ts')
-    .pipe(dest(publishDir));
-};
+// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
+//function copyTsDeclarationToPublishDir ()  {
+  //return src(tsDeclarationDir + '/**/*.d.ts')
+    //.pipe(dest(publishDir));
+//};
 
 // Forced deprecation (force build fails when updating gulp-base)
 //function copySrcJsToLambdaLayerDir () {
@@ -546,7 +549,8 @@ function samDeploy(cb) {
 
 exports.tsScrDir = tsSrcDir;
 exports.tsTestDir = tsTestDir;
-exports.tsDeclarationDir = tsDeclarationDir;
+// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
+// exports.tsDeclarationDir = tsDeclarationDir;
 exports.srcDir = srcDir;
 exports.testDir = testDir; // JS test files (in JS projects, where you'd run JS files);
 exports.testingDir = testingDir; // Outpuit for JS test AND compiled TS test files (where' you'd run them all)
@@ -564,7 +568,8 @@ exports.cleanPublish = cleanPublish;
 exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
 exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDir;
 
-exports.copyTsDeclarationToPublishDir = copyTsDeclarationToPublishDir;
+// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
+//exports.copyTsDeclarationToPublishDir = copyTsDeclarationToPublishDir;
 
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
