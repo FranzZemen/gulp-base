@@ -20,8 +20,11 @@ let gitTimeout = null;
 let unscopedName = null;
 
 const tsSrcDir = './ts-src';
+const tsTestDir = './ts-test';
 const tsDeclarationDir = './ts-d';
 const srcDir = './src';
+const testDir = './test';
+const testingDir = './testing';
 const buildDir = './build';
 const releaseDir = './release';
 const publishDir = './publish';
@@ -32,6 +35,10 @@ function init(package, timeout=100) {
   packageJson = package;
   unscopedName = path.parse(packageJson.name).name;
   return exports;
+}
+
+function cleanTesting() {
+  return del(testingDir);
 }
 
 function cleanBuild() {
@@ -48,9 +55,21 @@ function cleanPublish() {
 
 function transpileTypescriptToBuildDir() {
   const tsProject = ts.createProject('tsconfig.json');
-  return src('ts-src/**/*.ts')
+  return src(tsSrcDir + '/**/*.ts')
     .pipe(tsProject())
     .pipe(dest(buildDir));
+}
+
+function transpileTestTypescriptToTestingDir() {
+  const tsProject = ts.createProject('tsconfig.json');
+  return src(tsTestDir + '/**/*.ts')
+    .pipe(tsProject())
+    .pipe(dest(testingDir));
+}
+
+function copyTestJsToTestingDir() {
+  return src(testDir + '/**/*.js')
+    .pipe(dest(testingDir));
 }
 
 function copySrcJsToBuildDir() {
@@ -522,23 +541,29 @@ function samDeploy(cb) {
 
 
 exports.tsScrDir = tsSrcDir;
+exports.tsTestDir = tsTestDir;
 exports.tsDeclarationDir = tsDeclarationDir;
 exports.srcDir = srcDir;
+exports.testDir = testDir; // JS test files (in JS projects, where you'd run JS files);
+exports.testingDir = testingDir; // Outpuit for JS test AND compiled TS test files (where' you'd run them all)
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
 exports.publishDir = publishDir;
 
 exports.init = init;
 
+exports.cleanTesting = cleanTesting;
 exports.cleanBuild = cleanBuild;
 exports.cleanRelease = cleanRelease;
 exports.cleanPublish = cleanPublish;
 
 exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
+exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDir;
 
 exports.copyTsDeclarationToPublishDir = copyTsDeclarationToPublishDir;
 
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
+exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
 exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;

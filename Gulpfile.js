@@ -1,7 +1,7 @@
 const gulpBase = require ('./Gulpbase').init(require('./package.json'));
 const {src, dest, series} = require('gulp');
 // For this one Npm package, src (Gulpbase.js) is not in src, so need local copy function.
-function copyJS() {
+function copyGulpBaseToPublishDir() {
 return src('./Gulpbase.js')
   .pipe(dest(gulpBase.publishDir));
 }
@@ -10,14 +10,16 @@ exports.default = series(
   gulpBase.cleanRelease,
   gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
   gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
-  copyJS,
+  gulpBase.transpileTestTypescriptToTestingDir,
+  gulpBase.copyTestJsToTestingDir,
+  copyGulpBaseToPublishDir,
   gulpBase.copyPackageJsonToPublishDir);
 
 exports.cleanPublish = gulpBase.cleanPublish;
 
 exports.patch = series(
   gulpBase.cleanPublish,
-  copyJS,
+  copyGulpBaseToPublishDir,
   gulpBase.incrementJsonPatch,
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
@@ -30,7 +32,7 @@ exports.patch = series(
 
 exports.minor = series(
   gulpBase.cleanPublish,
-  copyJS,
+  copyGulpBaseToPublishDir,
   gulpBase.incrementJsonMinor,
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
@@ -41,7 +43,7 @@ exports.minor = series(
 
 exports.major = series(
   gulpBase.cleanPublish,
-  copyJS,
+  copyGulpBaseToPublishDir,
   gulpBase.incrementJsonMajor,
   gulpBase.copyPackageJsonToPublishDir,
   gulpBase.publish,
