@@ -89,8 +89,8 @@ function copyBuildJsToPublishDir() {
     .pipe(dest(publishDir));
 }
 
-function copyBuildIndexTypescriptDeclarationToPublishDir() {
-  return src(buildDir + '/index.d.ts')
+function copyBuildTypescriptDeclarationToPublishDir() {
+  return src(buildDir + '/**/*.d.ts')
     .pipe(dest(publishDir));
 }
 
@@ -577,7 +577,7 @@ exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
 // exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;
 exports.copyBuildJsToPublishDir = copyBuildJsToPublishDir;
-exports.copyBuildIndexTypescriptDeclarationToPublishDir = copyBuildIndexTypescriptDeclarationToPublishDir;
+exports.copyBuildTypescriptDeclarationToPublishDir = copyBuildTypescriptDeclarationToPublishDir;
 
 // Forced deprecation (force build fails when updating gulp-base)
 // exports.copyConfigToBuildDir = copyConfigToBuildDir;
