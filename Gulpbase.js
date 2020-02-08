@@ -87,6 +87,12 @@ function copyBuildJsToPublishDir() {
     .pipe(dest(publishDir));
 }
 
+function copyBuildIndexTypescriptDeclarationToPublishDir() {
+  return src(buildDir + '/index.d.ts')
+    .pipe(dest(publishDir));
+}
+
+
 function copySrcJsToPublishDir ()  {
   return src(srcDir + '/**/*.js')
     .pipe(dest(publishDir));
@@ -97,19 +103,17 @@ function copyTsDeclarationToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
-/**
- * @deprecated
- * @returns {*}
- */
-function copySrcJsToLambdaLayerDir () {
-  return src(srcDir + '/**/*.js')
-    .pipe(dest(lambdaLayerDir));
-}
+// Forced deprecation (force build fails when updating gulp-base)
+//function copySrcJsToLambdaLayerDir () {
+//  return src(srcDir + '/**/*.js')
+  //  .pipe(dest(lambdaLayerDir));
+//}
 
-function copyConfigToBuildDir() {
-  return src(srcDir + '/config.json')
-    .pipe(dest(buildDir));
-}
+// Forced deprecation (force build fails when updating gulp-base)
+//function copyConfigToBuildDir() {
+  //return src(srcDir + '/config.json')
+    //.pipe(dest(buildDir));
+//}
 
 function copyPackageJsonToBuildDir(cb) {
   try {
@@ -566,11 +570,12 @@ exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
-exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;
-
+// exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;
 exports.copyBuildJsToPublishDir = copyBuildJsToPublishDir;
+exports.copyBuildIndexTypescriptDeclarationToPublishDir = copyBuildIndexTypescriptDeclarationToPublishDir;
 
-exports.copyConfigToBuildDir = copyConfigToBuildDir;
+// Forced deprecation (force build fails when updating gulp-base)
+// exports.copyConfigToBuildDir = copyConfigToBuildDir;
 
 exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;

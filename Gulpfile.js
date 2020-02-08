@@ -12,6 +12,7 @@ exports.default = series(
   gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
   gulpBase.transpileTestTypescriptToTestingDir,
   gulpBase.copyTestJsToTestingDir,
+  gulpBase.copyBuildIndexTypescriptDeclarationToPublishDir,
   copyGulpBaseToPublishDir,
   gulpBase.copyPackageJsonToPublishDir);
 
