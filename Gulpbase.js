@@ -13,7 +13,7 @@ const series = require('gulp').series;
 const debug = require('gulp-debug');
 const merge = require('merge-stream');
 const ts = require('gulp-typescript');
-
+const sourcemaps = require('gulp-sourcemaps');
 
 let packageJson = null;
 let gitTimeout = null;
@@ -58,14 +58,18 @@ function cleanPublish() {
 function transpileTypescriptToBuildDir() {
   const tsProject = ts.createProject('tsconfig.json');
   return src(tsSrcDir + '/**/*.ts')
+    .pipe(sourcemaps.init())
     .pipe(tsProject())
+    .pipe(sourcemaps.write())
     .pipe(dest(buildDir));
 }
 
 function transpileTestTypescriptToTestingDir() {
   const tsProject = ts.createProject('tsconfig.json');
   return src(tsTestDir + '/**/*.ts')
+    .pipe(sourcemaps.init())
     .pipe(tsProject())
+    .pipe(sourcemaps.write())
     .pipe(dest(testingDir));
 }
 
