@@ -487,6 +487,42 @@ function _samInstallFunctionsReleases(functions) {
   return Promise.all(npmPromises);
 }
 
+function transpileTypescriptToBuildDir() {
+  const tsProject = ts.createProject('tsconfig.json');
+  return src(tsSrcDir + '/**/*.ts')
+    .pipe(sourcemaps.init())
+    .pipe(tsProject())
+    .pipe(sourcemaps.write())
+    .pipe(dest(buildDir));
+}
+
+function samTranspileFunctionsTypescriptToReleases(cb) {
+  const tsProject = ts.createProject('tsconfig.json');
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    let thisStream = src('./functions/' + lambdaFunction + '/ts-src/**/*.ts')
+      .pipe(sourcemaps.init())
+      .pipe(tsProject())
+      .pipe(sourcemaps.write())
+      .pipe(dest('./functions/' + lambdaFunction + '/release'));
+    if(merged) {
+      merged.add(thisStream);
+    } else if (last) {
+      merged = merge(last, thisStream);
+    } else {
+      last = thisStream;
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
 function samCreateFunctionsReleases(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
@@ -558,8 +594,6 @@ function samDeploy(cb) {
 
 exports.tsScrDir = tsSrcDir;
 exports.tsTestDir = tsTestDir;
-// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
-// exports.tsDeclarationDir = tsDeclarationDir;
 exports.srcDir = srcDir;
 exports.testDir = testDir; // JS test files (in JS projects, where you'd run JS files);
 exports.testingDir = testingDir; // Outpuit for JS test AND compiled TS test files (where' you'd run them all)
@@ -577,20 +611,13 @@ exports.cleanPublish = cleanPublish;
 exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
 exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDir;
 
-// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
-//exports.copyTsDeclarationToPublishDir = copyTsDeclarationToPublishDir;
-
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
 exports.copyJsonToTestingDir = copyJsonToTestingDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
-// exports.copySrcJsToLambdaLayerDir = copySrcJsToLambdaLayerDir;
 exports.copyBuildJsToPublishDir = copyBuildJsToPublishDir;
 exports.copyBuildTypescriptDeclarationToPublishDir = copyBuildTypescriptDeclarationToPublishDir;
-
-// Forced deprecation (force build fails when updating gulp-base)
-// exports.copyConfigToBuildDir = copyConfigToBuildDir;
 
 exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
@@ -623,6 +650,7 @@ exports.samClean = samClean;
 exports.samNpmForceUpdateFunctionsProject = samNpmForceUpdateFunctionsProject;
 exports.samNpmForceUpdateLayersProject = samNpmForceUpdateLayersProject;
 exports.samCreateFunctionsReleases = samCreateFunctionsReleases;
+exports.samTranspileFunctionsTypescriptToReleases = samTranspileFunctionsTypescriptToReleases;
 exports.samInstallFunctionsReleases = samInstallFunctionsReleases;
 exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
