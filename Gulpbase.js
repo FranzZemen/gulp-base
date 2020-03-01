@@ -502,9 +502,9 @@ function samTranspileFunctionsTypescriptToReleases(cb) {
   let merged, last;
   functions.forEach((lambdaFunction) => {
     let thisStream = src('./functions/' + lambdaFunction + '/ts-src/**/*.ts')
-      .pipe(sourcemaps.init())
+//      .pipe(sourcemaps.init())
       .pipe(tsProject())
-      .pipe(sourcemaps.write())
+//      .pipe(sourcemaps.write())
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
     if(merged) {
       merged.add(thisStream);
