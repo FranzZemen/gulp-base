@@ -497,10 +497,10 @@ function transpileTypescriptToBuildDir() {
 }
 
 function samTranspileFunctionsTypescriptToReleases(cb) {
-  const tsProject = ts.createProject('tsconfig.json');
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
+    let tsProject = ts.createProject('tsconfig.json');
     let thisStream = src('./functions/' + lambdaFunction + '/ts-src/**/*.ts')
 //      .pipe(sourcemaps.init())
       .pipe(tsProject())
