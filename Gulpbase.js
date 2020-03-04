@@ -109,24 +109,6 @@ function copySrcJsToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
-// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
-//function copyTsDeclarationToPublishDir ()  {
-  //return src(tsDeclarationDir + '/**/*.d.ts')
-    //.pipe(dest(publishDir));
-//};
-
-// Forced deprecation (force build fails when updating gulp-base)
-//function copySrcJsToLambdaLayerDir () {
-//  return src(srcDir + '/**/*.js')
-  //  .pipe(dest(lambdaLayerDir));
-//}
-
-// Forced deprecation (force build fails when updating gulp-base)
-//function copyConfigToBuildDir() {
-  //return src(srcDir + '/config.json')
-    //.pipe(dest(buildDir));
-//}
-
 function copyPackageJsonToBuildDir(cb) {
   try {
     fs.mkdirSync(buildDir);
@@ -343,14 +325,6 @@ function statusCode() {
   });
 }
 
-/*
-function commitCode() {
-  const arguments = minimist(process.argv.slice(2));
-  if(arguments.m && arguments.m.trim().length > 0) {
-    return src('./*')
-      .pipe(git.commit(arguments.m))
-  }
-}*/
 
 async function gitCheckIn(cb) {
   const arguments = minimist(process.argv.slice(2));
@@ -487,14 +461,14 @@ function _samInstallFunctionsReleases(functions) {
   return Promise.all(npmPromises);
 }
 
-function transpileTypescriptToBuildDir() {
-  const tsProject = ts.createProject('tsconfig.json');
-  return src(tsSrcDir + '/**/*.ts')
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(sourcemaps.write())
-    .pipe(dest(buildDir));
-}
+//function transpileTypescriptToBuildDir() {
+//  const tsProject = ts.createProject('tsconfig.json');
+//  return src(tsSrcDir + '/**/*.ts')
+//    .pipe(sourcemaps.init())
+//    .pipe(tsProject())
+//    .pipe(sourcemaps.write())
+//    .pipe(dest(buildDir));
+//}
 
 function samTranspileFunctionsTypescriptToReleases(cb) {
   let functions = fs.readdirSync('./functions');
@@ -506,6 +480,33 @@ function samTranspileFunctionsTypescriptToReleases(cb) {
       .pipe(tsProject())
 //      .pipe(sourcemaps.write())
       .pipe(dest('./functions/' + lambdaFunction + '/release'));
+    if(merged) {
+      merged.add(thisStream);
+    } else if (last) {
+      merged = merge(last, thisStream);
+    } else {
+      last = thisStream;
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
+function samTranspileFunctionsTestTypescriptToTesting(cb) {
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    let tsProject = ts.createProject('tsconfig.json');
+    let thisStream = src('./functions/' + lambdaFunction + '/ts-test/**/*.ts')
+      //      .pipe(sourcemaps.init())
+      .pipe(tsProject())
+      //      .pipe(sourcemaps.write())
+      .pipe(dest('./functions/' + lambdaFunction + '/testing'));
     if(merged) {
       merged.add(thisStream);
     } else if (last) {
@@ -624,7 +625,6 @@ exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
 exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
 
 exports.npmUpdateProject = npmUpdateProject;
-exports.npmForceCoreLibraryUpdates = npmForceCoreLibraryUpdates; // Deprecated
 exports.npmForceUpdateProject = npmForceCoreLibraryUpdates;
 
 exports.npmInstallBuildDir = npmInstallBuildDir;
@@ -651,6 +651,7 @@ exports.samNpmForceUpdateFunctionsProject = samNpmForceUpdateFunctionsProject;
 exports.samNpmForceUpdateLayersProject = samNpmForceUpdateLayersProject;
 exports.samCreateFunctionsReleases = samCreateFunctionsReleases;
 exports.samTranspileFunctionsTypescriptToReleases = samTranspileFunctionsTypescriptToReleases;
+exports.samTranspileFunctionsTestTypescriptToTesting = samTranspileFunctionsTestTypescriptToTesting;
 exports.samInstallFunctionsReleases = samInstallFunctionsReleases;
 exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
