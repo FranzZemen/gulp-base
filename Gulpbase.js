@@ -556,6 +556,35 @@ function samCreateFunctionsReleases(cb) {
   }
 }
 
+function samCopyTestFiles(cb) {
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    if(fs.existsSync('./functions/' + lambdaFunction + '/ts-src')) {
+      let thisStream = src(
+        [
+          './functions/' + lambdaFunction + '/ts-src/config.json'
+        ])
+        .pipe(debug())
+        .pipe(dest('./functions/' + lambdaFunction + '/testing'));
+      if (merged) {
+        merged.add(thisStream);
+      } else if (last) {
+        merged = merge(last, thisStream);
+      } else {
+        last = thisStream;
+      }
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
 async function samInstallFunctionsReleases(cb) {
   let functions = fs.readdirSync('./functions');
   await _samInstallFunctionsReleases(functions);
@@ -656,6 +685,7 @@ exports.samCreateFunctionsReleases = samCreateFunctionsReleases;
 exports.samTranspileFunctionsTypescriptToReleases = samTranspileFunctionsTypescriptToReleases;
 exports.samTranspileFunctionsTestTypescriptToTesting = samTranspileFunctionsTestTypescriptToTesting;
 exports.samInstallFunctionsReleases = samInstallFunctionsReleases;
+exports.samCopyTestFiles = samCopyTestFiles;
 exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
 exports.samDeploy = samDeploy;
