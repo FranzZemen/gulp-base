@@ -560,7 +560,7 @@ function samCopyTestFiles(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
-    if(fs.existsSync('./functions/' + lambdaFunction + '/ts-src')) {
+    if(fs.existsSync('./functions/' + lambdaFunction + '/ts-test')) {
       let thisStream = src(
         [
           './functions/' + lambdaFunction + '/ts-src/config.json'
