@@ -392,6 +392,9 @@ function samClean(cb) {
   functions.forEach(lambdaFunction => {
     console.log('Deleted ' + del.sync('./functions/' + lambdaFunction + '/release'));
   });
+  functions.forEach(lambdaFunction => {
+    console.log('Deleted ' + del.sync('./functions/' + lambdaFunction + '/testing'));
+  });
   let layers = fs.readdirSync('./layers');
   layers.forEach(layer => {
     console.log('Deleted ' + del.sync('./layers/' + layer + '/nodejs/node_modules'));
