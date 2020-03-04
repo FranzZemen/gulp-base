@@ -563,7 +563,7 @@ function samCopyTestFiles(cb) {
     if(fs.existsSync('./functions/' + lambdaFunction + '/ts-test')) {
       let thisStream = src(
         [
-          './functions/' + lambdaFunction + '/ts-src/config.json'
+          './functions/' + lambdaFunction + '/ts-test/config.json'
         ])
         .pipe(debug())
         .pipe(dest('./functions/' + lambdaFunction + '/testing'));
