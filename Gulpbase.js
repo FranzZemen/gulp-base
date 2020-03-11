@@ -83,6 +83,11 @@ function copyJsonToTestingDir() {
     .pipe(dest(testingDir));
 }
 
+function copyJsonToBuildDir() {
+  return src([srcDir + '/**/*.json', tsSrcDir + '/**/*.json'])
+    .pipe(dest(buildDir));
+}
+
 function copySrcJsToBuildDir() {
   return src(srcDir + '/**/*.js')
     .pipe(dest(buildDir));
@@ -647,6 +652,7 @@ exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDi
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
 exports.copyJsonToTestingDir = copyJsonToTestingDir;
+exports.copyJsonToBuildDir = copyJsonToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
 exports.copyBuildJsToPublishDir = copyBuildJsToPublishDir;
