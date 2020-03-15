@@ -83,6 +83,11 @@ function copyJsonToTestingDir() {
     .pipe(dest(testingDir));
 }
 
+function copySecretsToTestingDir() {
+  return src([testDir + '/**/*.pem', tsTestDir + '/**/*.pem'])
+    .pipe(dest(testingDir));
+}
+
 function copyJsonToBuildDir() {
   return src([srcDir + '/**/*.json', tsSrcDir + '/**/*.json'])
     .pipe(dest(buildDir));
@@ -540,6 +545,7 @@ function samCreateFunctionsReleases(cb) {
       [
         './functions/' + lambdaFunction + '/src/**/*.js',
         './functions/' + lambdaFunction + '/src/**/*.json',
+        './functions/' + lambdaFunction + '/src/**/*.pem',
         './functions/' + lambdaFunction + '/package.json',
         './functions/' + lambdaFunction + '/src/**/*.crt'])
       .pipe(debug())
@@ -568,7 +574,8 @@ function samCopyTestFiles(cb) {
     if(fs.existsSync('./functions/' + lambdaFunction + '/ts-test')) {
       let thisStream = src(
         [
-          './functions/' + lambdaFunction + '/ts-test/config.json'
+          './functions/' + lambdaFunction + '/ts-test/config.json',
+          './functions/' + lambdaFunction + '/ts-test/**/*.pem',
         ])
         .pipe(debug())
         .pipe(dest('./functions/' + lambdaFunction + '/testing'));
@@ -652,6 +659,7 @@ exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDi
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
 exports.copyJsonToTestingDir = copyJsonToTestingDir;
+exports.copySecretsToTestingDir = copySecretsToTestingDir;
 exports.copyJsonToBuildDir = copyJsonToBuildDir;
 exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
 exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
