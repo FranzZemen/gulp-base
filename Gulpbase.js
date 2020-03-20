@@ -18,6 +18,7 @@ const sourcemaps = require('gulp-sourcemaps');
 let packageJson = null;
 let gitTimeout = null;
 let unscopedName = null;
+let useSourcemaps = true;
 
 const tsSrcDir = './ts-src';
 const tsTestDir = './ts-test';
@@ -32,10 +33,11 @@ const releaseDir = './release';
 const publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
-function init(package, timeout=100) {
+function init(package, timeout=100, _useSourcemaps = true) {
   gitTimeout = timeout;
   packageJson = package;
   unscopedName = path.parse(packageJson.name).name;
+  useSourcemaps = _useSourcemaps;
   return exports;
 }
 
@@ -57,20 +59,32 @@ function cleanPublish() {
 
 function transpileTypescriptToBuildDir() {
   const tsProject = ts.createProject('tsconfig.json');
-  return src(tsSrcDir + '/**/*.ts')
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(sourcemaps.write())
-    .pipe(dest(buildDir));
+  if(useSourcemaps) {
+    return src(tsSrcDir + '/**/*.ts')
+      .pipe(sourcemaps.init())
+      .pipe(tsProject())
+      .pipe(sourcemaps.write())
+      .pipe(dest(buildDir));
+  } else {
+    return src(tsSrcDir + '/**/*.ts')
+      .pipe(tsProject())
+      .pipe(dest(buildDir));
+  }
 }
 
 function transpileTestTypescriptToTestingDir() {
   const tsProject = ts.createProject('tsconfig.json');
-  return src(tsTestDir + '/**/*.ts')
-    .pipe(sourcemaps.init())
-    .pipe(tsProject())
-    .pipe(sourcemaps.write())
-    .pipe(dest(testingDir));
+  if(useSourcemaps) {
+    return src(tsTestDir + '/**/*.ts')
+      .pipe(sourcemaps.init())
+      .pipe(tsProject())
+      .pipe(sourcemaps.write())
+      .pipe(dest(testingDir));
+  } else {
+    return src(tsTestDir + '/**/*.ts')
+      .pipe(tsProject())
+      .pipe(dest(testingDir));
+  }
 }
 
 function copyTestJsToTestingDir() {
