@@ -1,18 +1,18 @@
-const ncu = require('npm-check-updates');
+const exec = require('child_process').exec;
 
-exports.ncu = function() {
-  return ncu.run({
-  }).then(toBeUpgraded => {
-    console.log(toBeUpgraded);
-    return undefined;
-  });
+exports.ncu = function ncu(cb) {
+  exec('ncu', {cwd: './'}, (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  })
 };
 
-exports.ncuu = function() {
-  return ncu.run({
-    upgrade: true
-  }).then(upgraded => {
-    console.log(upgraded);
-    return undefined;
-  })
+// Note this satisfies semver rules (will not update if semver rule does not allow)
+exports.ncuu = function ncuu(cb) {
+  exec('ncu -u',{cwd: './'}, (err, stdout, stderr) =>{
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
 };
