@@ -1,12 +1,16 @@
 const ncu = require('npm-check-updates');
 
 exports.ncu = function() {
-  ncu.run({
+  return ncu.run({
+  }).then(toBeUpgraded => {
+    console.log(toBeUpgraded);
   });
 };
 
 exports.ncuu = function() {
-  ncu.run({
+  return ncu.run({
     upgrade: true
-  });
+  }).then(upgraded => {
+    console.log(upgraded);
+  })
 };
