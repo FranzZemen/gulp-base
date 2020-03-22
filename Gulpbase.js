@@ -716,3 +716,7 @@ exports.samRefreshLayers = samRefreshLayers;
 exports.samBuild = samBuild;
 exports.samDeploy = samDeploy;
 
+exports.upgrade = series(
+  exports.ncuu,
+  exports.npmInstallProject
+);
