@@ -1,7 +1,7 @@
 const exec = require('child_process').exec;
 
 exports.ncu = function ncu(cb) {
-  exec('ncu', {cwd: './'}, (err, stdout, stderr) => {
+  exec('ncu --packageFile package.json', {cwd: './'}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     cb(err);
@@ -10,7 +10,7 @@ exports.ncu = function ncu(cb) {
 
 // Note this satisfies semver rules (will not update if semver rule does not allow)
 exports.ncuu = function ncuu(cb) {
-  exec('ncu -u',{cwd: './'}, (err, stdout, stderr) =>{
+  exec('ncu -u --packageFile package.json',{cwd: './'}, (err, stdout, stderr) =>{
     console.log(stdout);
     console.log(stderr);
     cb(err);
