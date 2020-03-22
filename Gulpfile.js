@@ -4,7 +4,8 @@ const {src, dest, series} = require('gulp');
 function copyGulpBaseToPublishDir() {
 return src([
   './Gulpbase.js',
-  './npm.js'])
+  './npm-commands.js',
+  './ncu.js'])
   .pipe(dest(gulpBase.publishDir));
 }
 

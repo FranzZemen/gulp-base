@@ -14,8 +14,10 @@ const debug = require('gulp-debug');
 const merge = require('merge-stream');
 const ts = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
-exports.npmInstallProject = require('./npm').npmInstallProject;
-exports.npmUpdateProject = require('./npm').npmUpdateProject;
+exports.npmInstallProject = require('./npm-commands').npmInstallProject;
+exports.npmUpdateProject = require('./npm-commands').npmUpdateProject;
+exports.ncu = require('./ncu').ncu;
+exports.ncuu = require('./ncu').ncuu;
 
 let packageJson = null;
 let gitTimeout = null;
