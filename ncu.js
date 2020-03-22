@@ -4,6 +4,7 @@ exports.ncu = function() {
   return ncu.run({
   }).then(toBeUpgraded => {
     console.log(toBeUpgraded);
+    return undefined;
   });
 };
 
@@ -12,5 +13,6 @@ exports.ncuu = function() {
     upgrade: true
   }).then(upgraded => {
     console.log(upgraded);
+    return undefined;
   })
 };
