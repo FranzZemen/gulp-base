@@ -14,6 +14,7 @@ const debug = require('gulp-debug');
 const merge = require('merge-stream');
 const ts = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
+const npmInstallProject = require('./npm').npmInstallProject;
 
 let packageJson = null;
 let gitTimeout = null;
@@ -33,9 +34,9 @@ const releaseDir = './release';
 const publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
-function init(package, timeout=100, _useSourcemaps = true) {
+function init(packageName, timeout=100, _useSourcemaps = true) {
   gitTimeout = timeout;
-  packageJson = package;
+  packageJson = packageName;
   unscopedName = path.parse(packageJson.name).name;
   useSourcemaps = _useSourcemaps;
   return exports;
@@ -226,9 +227,11 @@ function npmUpdateProject(cb) {
   });
 }
 
-function coreUpdate(package, cwd = './') {
+
+
+function coreUpdate(packageName, cwd = './') {
   return new Promise((resolve, reject) => {
-    const out = execSync('npm install ' + package + '@latest',{cwd: cwd}, {encoding: 'utf8'}).toString();
+    const out = execSync('npm install ' + packageName + '@latest',{cwd: cwd}, {encoding: 'utf8'}).toString();
     console.log(out);
     resolve(true);
   });
@@ -351,12 +354,12 @@ function statusCode() {
 
 
 async function gitCheckIn(cb) {
-  const arguments = minimist(process.argv.slice(2));
-  if (arguments.m && arguments.m.trim().length > 0) {
+  const args = minimist(process.argv.slice(2));
+  if (args.m && args.m.trim().length > 0) {
     let files = await statusCode();
     return src(files)
       .pipe(git.add())
-      .pipe(git.commit(arguments.m));
+      .pipe(git.commit(args.m));
   } else return Promise.reject('No source comment');
 };
 
@@ -379,12 +382,12 @@ function gitAdd(cb) {
 };
 
 function gitCommit(cb) {
-  const arguments = minimist(process.argv.slice(2));
-  if (arguments.m && arguments.m.trim().length > 0) {
+  const args = minimist(process.argv.slice(2));
+  if (args.m && args.m.trim().length > 0) {
     statusCode()
       .then(files => {
         return src(files)
-          .pipe(git.commit(arguments.m));
+          .pipe(git.commit(args.m));
       })
       .then(result => {
         setTimeout(() => {
@@ -684,6 +687,7 @@ exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
 exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
 
+exports.npmInstallProject = npmInstallProject;
 exports.npmUpdateProject = npmUpdateProject;
 exports.npmForceUpdateProject = npmForceCoreLibraryUpdates;
 
