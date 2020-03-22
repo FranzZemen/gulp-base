@@ -7,3 +7,12 @@ exports.npmInstallProject = function npmInstallProject(cb) {
     cb(err);
   })
 };
+
+// Note this satisfies semver rules (will not update if semver rule does not allow)
+exports.npmUpdateProject = function npmUpdateProject(cb) {
+  exec('npm update',{cwd: './'}, (err, stdout, stderr) =>{
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+};

@@ -14,7 +14,8 @@ const debug = require('gulp-debug');
 const merge = require('merge-stream');
 const ts = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
-const npmInstallProject = require('./npm').npmInstallProject;
+exports.npmInstallProject = require('./npm').npmInstallProject;
+exports.npmUpdateProject = require('./npm').npmUpdateProject;
 
 let packageJson = null;
 let gitTimeout = null;
@@ -218,14 +219,7 @@ function incrementJsonPatch(cb) {
   cb();
 }
 
-// Note this satisfies semver rules (will not update if semver rule does not allow)
-function npmUpdateProject(cb) {
-  exec('npm update',{cwd: './'}, (err, stdout, stderr) =>{
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
-}
+
 
 
 
@@ -687,8 +681,6 @@ exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
 exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
 exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
 
-exports.npmInstallProject = npmInstallProject;
-exports.npmUpdateProject = npmUpdateProject;
 exports.npmForceUpdateProject = npmForceCoreLibraryUpdates;
 
 exports.npmInstallBuildDir = npmInstallBuildDir;
