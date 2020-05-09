@@ -721,3 +721,82 @@ exports.upgrade = series(
   exports.ncuu,
   exports.npmInstallProject
 );
+
+function test ()  {
+  return src('./testing/**/*.test.js')
+    .pipe(mocha());
+}
+
+exports.default = series(
+  cleanPublish,
+  cleanBuild,
+  cleanTesting,
+  transpileTypescriptToBuildDir,
+  copySrcJsToBuildDir,
+  copyTestJsToTestingDir,
+  copyJsonToTestingDir,
+  copyBuildTypescriptDeclarationToPublishDir,
+  copyBuildJsToPublishDir,
+  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  copyPackageJsonToPublishDir,
+  test);
+
+
+
+exports.patch = series(
+  cleanPublish,
+  cleanBuild,
+  cleanTesting,
+  transpileTypescriptToBuildDir,
+  copySrcJsToBuildDir,
+  copyTestJsToTestingDir,
+  copyJsonToTestingDir,
+  copyBuildTypescriptDeclarationToPublishDir,
+  copyBuildJsToPublishDir,
+  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  test,
+  incrementJsonPatch,
+  copyPackageJsonToPublishDir,
+  publish,
+  gitAdd,
+  gitCommit,
+  gitPush);
+
+
+exports.minor = series(
+  cleanPublish,
+  cleanBuild,
+  cleanTesting,
+  transpileTypescriptToBuildDir,
+  copySrcJsToBuildDir,
+  copyTestJsToTestingDir,
+  copyJsonToTestingDir,
+  copyBuildTypescriptDeclarationToPublishDir,
+  copyBuildJsToPublishDir,
+  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  test,
+  incrementJsonMinor,
+  copyPackageJsonToPublishDir,
+  publish,
+  gitAdd,
+  gitCommit,
+  gitPush);
+
+exports.major = series(
+  cleanPublish,
+  cleanBuild,
+  cleanTesting,
+  transpileTypescriptToBuildDir,
+  copySrcJsToBuildDir,
+  copyTestJsToTestingDir,
+  copyJsonToTestingDir,
+  copyBuildTypescriptDeclarationToPublishDir,
+  copyBuildJsToPublishDir,
+  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  test,
+  incrementJsonMajor,
+  copyPackageJsonToPublishDir,
+  publish,
+  gitAdd,
+  gitCommit,
+  gitPush);
