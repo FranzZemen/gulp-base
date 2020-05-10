@@ -14,6 +14,8 @@ const debug = require('gulp-debug');
 const merge = require('merge-stream');
 const ts = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
+const mocha = require('gulp-mocha');
+
 exports.npmInstallProject = require('./npm-commands').npmInstallProject;
 exports.npmUpdateProject = require('./npm-commands').npmUpdateProject;
 exports.ncu = require('./ncu').ncu;
