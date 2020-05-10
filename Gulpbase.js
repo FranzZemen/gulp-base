@@ -729,6 +729,10 @@ function test ()  {
     .pipe(mocha());
 }
 
+exports.test = test;
+
+
+
 exports.default = series(
   cleanPublish,
   cleanBuild,
