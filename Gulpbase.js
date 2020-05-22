@@ -114,6 +114,11 @@ function copyJsonToBuildDir() {
     .pipe(dest(buildDir));
 }
 
+function copyBuildJsonToPublishDir() {
+  return src([buildDir + '/**/*.json'])
+    .pipe(dest(publishDir));
+}
+
 function copySrcJsToBuildDir() {
   return src(srcDir + '/**/*.js')
     .pipe(dest(buildDir));
@@ -739,10 +744,12 @@ exports.default = series(
   cleanTesting,
   transpileTypescriptToBuildDir,
   copySrcJsToBuildDir,
+  copyJsonToBuildDir,
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
+  copyBuildJsonToPublishDir,
   transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
   copyPackageJsonToPublishDir,
   test);
@@ -755,10 +762,12 @@ exports.patch = series(
   cleanTesting,
   transpileTypescriptToBuildDir,
   copySrcJsToBuildDir,
+  copyJsonToBuildDir,
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
+  copyBuildJsonToPublishDir,
   transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
   test,
   incrementJsonPatch,
@@ -775,6 +784,7 @@ exports.minor = series(
   cleanTesting,
   transpileTypescriptToBuildDir,
   copySrcJsToBuildDir,
+  copyJsonToBuildDir,
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
   copyBuildTypescriptDeclarationToPublishDir,
@@ -794,10 +804,12 @@ exports.major = series(
   cleanTesting,
   transpileTypescriptToBuildDir,
   copySrcJsToBuildDir,
+  copyJsonToBuildDir,
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
+  copyBuildJsonToPublishDir,
   transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
   test,
   incrementJsonMajor,
