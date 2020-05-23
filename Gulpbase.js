@@ -6,7 +6,7 @@ const del = require('del');
 const fs = require('fs');
 const zip = require('gulp-zip');
 const path = require('path');
-const updateLambda = require('@franzzemen/aws-scripts').updateLambda;
+// const updateLambda = require('@franzzemen/aws-scripts').updateLambda;
 const minimist = require('minimist');
 const git = require('gulp-git');
 const series = require('gulp').series;
@@ -329,11 +329,12 @@ function publish(cb) {
  * @deprecated
  * @returns {*}
  */
+/*
 function deployLambda() {
   const zipPath = path.resolve(releaseDir + '/' + unscopedName + '.zip');
   console.log('Zip path: ' + zipPath);
   return updateLambda(unscopedName, zipPath);
-}
+}*/
 
 function cleanGitStatus(data) {
   const fileDescriptions = data.split('\n');
@@ -703,7 +704,7 @@ exports.incrementJsonPatch = incrementJsonPatch;
 exports.incrementJsonMinor = incrementJsonMinor;
 exports.incrementJsonMajor = incrementJsonMajor;
 
-exports.deployLambda = deployLambda;
+// exports.deployLambda = deployLambda;
 
 exports.publish = publish;
 
