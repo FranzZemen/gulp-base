@@ -20,7 +20,6 @@ exports.npmInstallProject = require('./npm-commands').npmInstallProject;
 exports.npmUpdateProject = require('./npm-commands').npmUpdateProject;
 exports.ncu = require('./ncu').ncu;
 exports.ncuu = require('./ncu').ncuu;
-exports.npmu = require('@franzzemen/npmu').npmu;
 
 let packageJson = null;
 let gitTimeout = null;
