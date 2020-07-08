@@ -736,7 +736,12 @@ function test ()  {
 
 exports.test = test;
 
-
+exports.buildTest = series(
+  cleanTesting,
+  copyTestJsToTestingDir,
+  copyJsonToTestingDir,
+  transpileTestTypescriptToTestingDir,
+);
 
 exports.default = series(
   cleanPublish,
