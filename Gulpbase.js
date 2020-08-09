@@ -223,7 +223,7 @@ function incrementJsonPatch(cb) {
     let patchVersion = parseInt(semver[2],10) + 1;
     packageJson.version = semver[0] + '.' + semver[1] + '.' + patchVersion;
     console.log('New package version: ' + packageJson.version);
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson));
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
   }
   cb();
 }
