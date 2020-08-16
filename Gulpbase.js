@@ -152,7 +152,7 @@ function copyPackageJsonToBuildDir(cb) {
       cb(error);
     }
   }
-  fs.writeFileSync(buildDir + '/package.json', JSON.stringify(packageJson));
+  fs.writeFileSync(buildDir + '/package.json', JSON.stringify(packageJson, null, 2));
   cb();
 }
 
@@ -165,7 +165,7 @@ function copyPackageJsonToPublishDir(cb) {
       cb(error);
     }
   }
-  fs.writeFileSync(publishDir + '/package.json', JSON.stringify(packageJson));
+  fs.writeFileSync(publishDir + '/package.json', JSON.stringify(packageJson, null, 2));
   cb();
 }
 
@@ -190,7 +190,7 @@ function copyPackageJsonToLambdaLayerDir(cb) {
       cb(error);
     }
   }
-  fs.writeFileSync(lambdaLayerDir + '/package.json', JSON.stringify(packageJson));
+  fs.writeFileSync(lambdaLayerDir + '/package.json', JSON.stringify(packageJson, null, 2));
   cb();
 }
 
@@ -282,7 +282,7 @@ function incrementJsonMinor(cb) {
     let minorVersion = parseInt(semver[1], 10) + 1;
     packageJson.version = semver[0] + '.' + minorVersion + '.0';
     console.log('New package version: ' + packageJson.version);
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson));
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
   }
   cb();
 }
@@ -295,7 +295,7 @@ function incrementJsonMajor(cb) {
     let majorVersion = parseInt(semver[0], 10) + 1;
     packageJson.version = majorVersion + '.0.0';
     console.log('New package version: ' + packageJson.version);
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson));
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
   }
   cb();
 }
