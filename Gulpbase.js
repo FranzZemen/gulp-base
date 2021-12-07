@@ -15,6 +15,7 @@ const merge = require('merge-stream');
 const ts = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
 const mocha = require('gulp-mocha');
+const {buildTest} = require('./Gulpbase');
 
 exports.npmInstallProject = require('./npm-commands').npmInstallProject;
 exports.npmUpdateProject = require('./npm-commands').npmUpdateProject;
@@ -741,6 +742,7 @@ exports.buildTest = series(
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
   transpileTestTypescriptToTestingDir,
+  test
 );
 
 exports.default = series(
