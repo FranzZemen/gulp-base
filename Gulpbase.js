@@ -16,6 +16,7 @@ const ts = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
 const mocha = require('gulp-mocha');
 const {buildTest} = require('./Gulpbase');
+const {main} = require('mocha/lib/cli/index');
 
 exports.npmInstallProject = require('./npm-commands').npmInstallProject;
 exports.npmUpdateProject = require('./npm-commands').npmUpdateProject;
@@ -26,6 +27,7 @@ let packageJson = null;
 let gitTimeout = null;
 let unscopedName = null;
 let useSourcemaps = true;
+let mainBranch = 'master'; // most repos still using master, later move this to main
 
 const tsSrcDir = './ts-src';
 const tsTestDir = './ts-test';
@@ -412,8 +414,8 @@ function gitCommit(cb) {
 };
 
 function gitPush(cb) {
-  console.log('Pushing to master');
-  git.push('origin', 'master', function (err) {
+  console.log('Pushing to ' + mainBranch);
+  git.push('origin', mainBranch, function (err) {
     if (err) throw err;
     cb();
   });
@@ -667,6 +669,7 @@ exports.testingDir = testingDir; // Outpuit for JS test AND compiled TS test fil
 exports.buildDir = buildDir;
 exports.releaseDir = releaseDir;
 exports.publishDir = publishDir;
+exports.mainBranch = mainBranch;
 
 exports.init = init;
 
