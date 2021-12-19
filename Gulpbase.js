@@ -671,6 +671,10 @@ exports.releaseDir = releaseDir;
 exports.publishDir = publishDir;
 exports.mainBranch = mainBranch;
 
+exports.setMainBranch = function(branch) {
+  mainBranch = branch;
+}
+
 exports.init = init;
 
 exports.cleanTesting = cleanTesting;
