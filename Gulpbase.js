@@ -148,7 +148,7 @@ function copySrcJsToPublishDir ()  {
 };
 
 function copySrcMdToPublishDir () {
-  return src(srcDir + '/**/*.md')
+  return src(['./*.md', srcDir + '/**/*.md'])
     .pipe(dest(publishDir));
 }
 
