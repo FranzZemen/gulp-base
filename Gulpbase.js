@@ -147,6 +147,11 @@ function copySrcJsToPublishDir ()  {
     .pipe(dest(publishDir));
 };
 
+function copySrcMdToPublishDir () {
+  return src(srcDir + '/**/*.md')
+    .pipe(dest(publishDir));
+}
+
 function copyPackageJsonToBuildDir(cb) {
   try {
     fs.mkdirSync(buildDir);
@@ -685,6 +690,7 @@ exports.cleanPublish = cleanPublish;
 exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
 exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDir;
 
+exports.copySrcMdToPublishDir = copySrcMdToPublishDir;
 exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
 exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
 exports.copyJsonToTestingDir = copyJsonToTestingDir;
