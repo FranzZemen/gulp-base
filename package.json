@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "7.5.4",
+  "version": "7.5.5",
   "description": "Common Gulp base",
   "main": "Gulpbase.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "gulp": "^4.0.2"
   },
   "dependencies": {
-    "del": "^7.0.0",
+    "del": "^6.0.0",
     "gulp-copy": "^4.0.1",
     "gulp-debug": "^4.0.0",
     "gulp-git": "^2.10.1",
