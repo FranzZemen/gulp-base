@@ -1,71 +1,71 @@
-const src = require('gulp').src;
-const dest = require('gulp').dest;
-const exec = require('child_process').exec;
-const execSync = require('child_process').execSync;
-const del = require('del');
-const fs = require('fs');
-const zip = require('gulp-zip');
-const path = require('path');
-// const updateLambda = require('@franzzemen/aws-scripts').updateLambda;
-const minimist = require('minimist');
-const git = require('gulp-git');
-const series = require('gulp').series;
-const debug = require('gulp-debug');
-const merge = require('merge-stream');
-const ts = require('gulp-typescript');
-const sourcemaps = require('gulp-sourcemaps');
-const mocha = require('gulp-mocha');
-
-
-exports.npmInstallProject = require('./npm-commands').npmInstallProject;
-exports.npmUpdateProject = require('./npm-commands').npmUpdateProject;
-exports.ncu = require('./ncu').ncu;
-exports.ncuu = require('./ncu').ncuu;
+import gulp from 'gulp';
+const src = gulp.src;
+const dest = gulp.dest;
+import {exec} from 'child_process';
+import {execSync} from 'child_process';
+import {deleteSync} from 'del';
+import * as fs from 'fs';
+import * as zip from 'gulp-zip';
+import * as path from 'path';
+import * as minimist from 'minimist';
+import git from 'gulp-git';
+import debug from 'gulp-debug';
+import merge from 'merge-stream';
+import ts from 'gulp-typescript';
+import sourcemaps from 'gulp-sourcemaps';
+import mocha from 'gulp-mocha';
+import {npmInstallProject} from './npm-commands.js';
+import {npmUpdateProject} from './npm-commands.js';
+import {ncu} from './ncu.js';
+import {ncuu} from './ncu.js';
 
 let packageJson = null;
 let gitTimeout = null;
 let unscopedName = null;
 let useSourcemaps = true;
-let mainBranch = 'master'; // most repos still using master, later move this to main
+export let mainBranch = 'master'; // most repos still using master, later move this to main
 
-const tsSrcDir = './ts-src';
-const tsTestDir = './ts-test';
+export const tsSrcDir = './ts-src';
+export const tsTestDir = './ts-test';
 
 // Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
 // const tsDeclarationDir = './ts-d';
-const srcDir = './src';
-const testDir = './test';
-const testingDir = './testing';
-const buildDir = './build';
-const releaseDir = './release';
-const publishDir = './publish';
+export const srcDir = './src';
+export const testDir = './test';
+export const testingDir = './testing';
+export const buildDir = './build';
+export const releaseDir = './release';
+export const publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
-function init(packageName, timeout=100, _useSourcemaps = true) {
+export function init(packageName, timeout=100, _useSourcemaps = true) {
   gitTimeout = timeout;
   packageJson = packageName;
   unscopedName = path.parse(packageJson.name).name;
   useSourcemaps = _useSourcemaps;
-  return exports;
 }
 
-function cleanTesting() {
-  return del(testingDir);
+export function cleanTesting(cb) {
+  deleteSync(testingDir);
+  cb();
 }
 
-function cleanBuild() {
-  return del(buildDir);
+export function cleanBuild(cb) {
+  deleteSync(buildDir);
+  cb();
 }
 
-function cleanRelease() {
-  return del(releaseDir);
+export function cleanRelease(cb) {
+  deleteSync(releaseDir);
+  cb();
 }
 
-function cleanPublish() {
-  return del(publishDir);
+export function cleanPublish(cb) {
+  deleteSync(publishDir);
+  cb();
 }
 
-function transpileTypescriptToBuildDir() {
+export function transpileTypescriptToBuildDir() {
   const tsProject = ts.createProject('tsconfig.json');
   if(useSourcemaps) {
     return src(tsSrcDir + '/**/*.ts')
@@ -80,7 +80,7 @@ function transpileTypescriptToBuildDir() {
   }
 }
 
-function transpileTestTypescriptToTestingDir() {
+export function transpileTestTypescriptToTestingDir() {
   const tsProject = ts.createProject('tsconfig.json');
   if(useSourcemaps) {
     return src(tsTestDir + '/**/*.ts')
@@ -95,63 +95,63 @@ function transpileTestTypescriptToTestingDir() {
   }
 }
 
-function copyTestJsToTestingDir() {
+export function copyTestJsToTestingDir() {
   return src(testDir + '/**/*.js')
     .pipe(dest(testingDir));
 }
 
-function copyJsonToTestingDir() {
+export function copyJsonToTestingDir() {
   return src([testDir + '/**/*.json', tsTestDir + '/**/*.json'])
     .pipe(dest(testingDir));
 }
 
-function copySecretsToTestingDir() {
+export function copySecretsToTestingDir() {
   return src([testDir + '/**/*.pem', tsTestDir + '/**/*.pem'])
     .pipe(dest(testingDir));
 }
 
-function copyJsonToBuildDir() {
+export function copyJsonToBuildDir() {
   return src([srcDir + '/**/*.json', tsSrcDir + '/**/*.json'])
     .pipe(dest(buildDir));
 }
 
-function copyBuildJsonToPublishDir() {
+export function copyBuildJsonToPublishDir() {
   return src([buildDir + '/**/*.json'])
     .pipe(dest(publishDir));
 }
 
-function copySrcJsToBuildDir() {
+export function copySrcJsToBuildDir() {
   return src(srcDir + '/**/*.js')
     .pipe(dest(buildDir));
 }
 
-function copySrcJsToReleaseDir ()  {
+export function copySrcJsToReleaseDir ()  {
   return src(srcDir + '/**/*.js')
     .pipe(dest(releaseDir));
 };
 
-function copyBuildJsToPublishDir() {
+export function copyBuildJsToPublishDir() {
   return src(buildDir + '/**/*.js')
     .pipe(dest(publishDir));
 }
 
-function copyBuildTypescriptDeclarationToPublishDir() {
+export function copyBuildTypescriptDeclarationToPublishDir() {
   return src(buildDir + '/**/*.d.ts')
     .pipe(dest(publishDir));
 }
 
 
-function copySrcJsToPublishDir ()  {
+export function copySrcJsToPublishDir ()  {
   return src(srcDir + '/**/*.js')
     .pipe(dest(publishDir));
 };
 
-function copySrcMdToPublishDir () {
+export function copySrcMdToPublishDir () {
   return src([srcDir + '/**/*.md', './*.md'])
     .pipe(dest(publishDir));
 }
 
-function copyPackageJsonToBuildDir(cb) {
+export function copyPackageJsonToBuildDir(cb) {
   try {
     fs.mkdirSync(buildDir);
   } catch (error) {
@@ -164,7 +164,7 @@ function copyPackageJsonToBuildDir(cb) {
 }
 
 
-function copyPackageJsonToPublishDir(cb) {
+export function copyPackageJsonToPublishDir(cb) {
   try {
     fs.mkdirSync(publishDir);
   } catch (error) {
@@ -180,7 +180,7 @@ function copyPackageJsonToPublishDir(cb) {
  * @deprecated
  * @param cb
  */
-function copyPackageJsonToLambdaLayerDir(cb) {
+export function copyPackageJsonToLambdaLayerDir(cb) {
   try {
     fs.mkdirSync(buildDir);
   }
@@ -205,7 +205,7 @@ function copyPackageJsonToLambdaLayerDir(cb) {
  * @deprecated
  * @returns {*}
  */
-function packageLayerRelease() {
+export function packageLayerRelease() {
   return src(buildDir + '/**/*.*')
     .pipe(zip(unscopedName + '.zip'))
     .pipe(dest(releaseDir));
@@ -215,14 +215,14 @@ function packageLayerRelease() {
  * @deprecated
  * @returns {*}
  */
-function packageLambdaRelease() {
+export function packageLambdaRelease() {
   return src(buildDir + '/**/*.*')
     .pipe(zip(unscopedName + '.zip'))
     .pipe(dest(releaseDir));
 }
 
 
-function incrementJsonPatch(cb) {
+export function incrementJsonPatch(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
   if(semver.length = 3) {
@@ -281,7 +281,7 @@ function npmForceCoreLibraryUpdates(cb) {
   }
 }
 
-function incrementJsonMinor(cb) {
+export function incrementJsonMinor(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
   if (semver.length = 3) {
@@ -294,7 +294,7 @@ function incrementJsonMinor(cb) {
   cb();
 }
 
-function incrementJsonMajor(cb) {
+export function incrementJsonMajor(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
   if (semver.length = 3) {
@@ -307,7 +307,7 @@ function incrementJsonMajor(cb) {
   cb();
 }
 
-function npmInstallBuildDir(cb) {
+export function npmInstallBuildDir(cb) {
   exec('npm install --only=prod --no-package-lock', {cwd: buildDir}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
@@ -315,7 +315,7 @@ function npmInstallBuildDir(cb) {
   });
 }
 
-function npmInstallLayerDir(cb) {
+export function npmInstallLayerDir(cb) {
   exec('npm install --only=prod --no-package-lock', {cwd: lambdaLayerDir}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
@@ -323,7 +323,7 @@ function npmInstallLayerDir(cb) {
   });
 }
 
-function publish(cb) {
+export function publish(cb) {
   exec('npm publish publish', {}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
@@ -331,18 +331,8 @@ function publish(cb) {
   });
 }
 
-/**
- * @deprecated
- * @returns {*}
- */
-/*
-function deployLambda() {
-  const zipPath = path.resolve(releaseDir + '/' + unscopedName + '.zip');
-  console.log('Zip path: ' + zipPath);
-  return updateLambda(unscopedName, zipPath);
-}*/
 
-function cleanGitStatus(data) {
+export function cleanGitStatus(data) {
   const fileDescriptions = data.split('\n');
   let uncommittedFiles = [];
   fileDescriptions.forEach(line => {
@@ -364,7 +354,7 @@ function statusCode() {
 }
 
 
-async function gitCheckIn(cb) {
+export async function gitCheckIn(cb) {
   const args = minimist(process.argv.slice(2));
   if (args.m && args.m.trim().length > 0) {
     let files = await statusCode();
@@ -374,7 +364,7 @@ async function gitCheckIn(cb) {
   } else return Promise.reject('No source comment');
 };
 
-function gitAdd(cb) {
+export function gitAdd(cb) {
   statusCode()
     .then(files => {
       return src(files)
@@ -392,7 +382,7 @@ function gitAdd(cb) {
     });
 };
 
-function gitCommit(cb) {
+export function gitCommit(cb) {
   const args = minimist(process.argv.slice(2));
   if (args.m && args.m.trim().length > 0) {
     statusCode()
@@ -417,25 +407,25 @@ function gitCommit(cb) {
   }
 };
 
-function gitPush(cb) {
+export function gitPush(cb) {
   console.log('Pushing to ' + mainBranch);
   git.push('origin', mainBranch, function (err) {
     if (err) throw err;
-    cb();
+    cb();f
   });
 };
 
-function samClean(cb) {
+export function samClean(cb) {
   let functions = fs.readdirSync('./functions');
   functions.forEach(lambdaFunction => {
-    console.log('Deleted ' + del.sync('./functions/' + lambdaFunction + '/release'));
+    console.log('Deleted ' + deleteSync('./functions/' + lambdaFunction + '/release'));
   });
   functions.forEach(lambdaFunction => {
-    console.log('Deleted ' + del.sync('./functions/' + lambdaFunction + '/testing'));
+    console.log('Deleted ' + deleteSync('./functions/' + lambdaFunction + '/testing'));
   });
   let layers = fs.readdirSync('./layers');
   layers.forEach(layer => {
-    console.log('Deleted ' + del.sync('./layers/' + layer + '/nodejs/node_modules'));
+    console.log('Deleted ' + deleteSync('./layers/' + layer + '/nodejs/node_modules'));
   });
   cb();
 }
@@ -481,13 +471,13 @@ async function _samNpmForceUpdateLayerProject(layers) {
 }
 
 
-async function samNpmForceUpdateFunctionsProject(cb) {
+export async function samNpmForceUpdateFunctionsProject(cb) {
   let functions = fs.readdirSync('./functions');
   await _samNpmForceUpdateFunctionProject(functions);
   cb();
 }
 
-async function samNpmForceUpdateLayersProject(cb) {
+export async function samNpmForceUpdateLayersProject(cb) {
   let layers = fs.readdirSync('./layers');
   await _samNpmForceUpdateLayerProject(layers);
   cb();
@@ -511,7 +501,7 @@ function _samInstallFunctionsReleases(functions) {
 //    .pipe(dest(buildDir));
 //}
 
-function samTranspileFunctionsTypescriptToReleases(cb) {
+export function samTranspileFunctionsTypescriptToReleases(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
@@ -538,7 +528,7 @@ function samTranspileFunctionsTypescriptToReleases(cb) {
   }
 }
 
-function samTranspileFunctionsTestTypescriptToTesting(cb) {
+export function samTranspileFunctionsTestTypescriptToTesting(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
@@ -565,7 +555,7 @@ function samTranspileFunctionsTestTypescriptToTesting(cb) {
   }
 }
 
-function samCreateFunctionsReleases(cb) {
+export function samCreateFunctionsReleases(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
@@ -595,7 +585,7 @@ function samCreateFunctionsReleases(cb) {
   }
 }
 
-function samCopyTestFiles(cb) {
+export function samCopyTestFiles(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
@@ -625,7 +615,7 @@ function samCopyTestFiles(cb) {
   }
 }
 
-async function samInstallFunctionsReleases(cb) {
+export async function samInstallFunctionsReleases(cb) {
   let functions = fs.readdirSync('./functions');
   await _samInstallFunctionsReleases(functions);
   cb();
@@ -639,7 +629,7 @@ function _samNpmInstallLayer(layer) {
   });
 }
 
-function samRefreshLayers(cb) {
+export function samRefreshLayers(cb) {
   let layers = fs.readdirSync('./layers');
   layers.forEach(async (layer) => {
     console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
@@ -648,7 +638,7 @@ function samRefreshLayers(cb) {
   cb();
 }
 
-function samBuild(cb) {
+export function samBuild(cb) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"sam build');
     console.log(execSync('sam build',{cwd: './', encoding : 'utf8'}).toString());
@@ -656,7 +646,7 @@ function samBuild(cb) {
   });
 }
 
-function samDeploy(cb) {
+export function samDeploy(cb) {
   return new Promise((resolve, reject) => {
     console.log('Executing \"sam deploy');
     console.log(execSync('sam deploy',{cwd: './', encoding : 'utf8'}).toString());
@@ -665,91 +655,24 @@ function samDeploy(cb) {
 }
 
 
-exports.tsScrDir = tsSrcDir;
-exports.tsTestDir = tsTestDir;
-exports.srcDir = srcDir;
-exports.testDir = testDir; // JS test files (in JS projects, where you'd run JS files);
-exports.testingDir = testingDir; // Outpuit for JS test AND compiled TS test files (where' you'd run them all)
-exports.buildDir = buildDir;
-exports.releaseDir = releaseDir;
-exports.publishDir = publishDir;
-exports.mainBranch = mainBranch;
-
-exports.setMainBranch = function(branch) {
+export const setMainBranch = function(branch) {
   mainBranch = branch;
 }
 
-exports.init = init;
+export const npmForceUpdateProject = npmForceCoreLibraryUpdates;
 
-exports.cleanTesting = cleanTesting;
-exports.cleanBuild = cleanBuild;
-exports.cleanRelease = cleanRelease;
-exports.cleanPublish = cleanPublish;
 
-exports.transpileTypescriptToBuildDir = transpileTypescriptToBuildDir;
-exports.transpileTestTypescriptToTestingDir = transpileTestTypescriptToTestingDir;
-
-exports.copySrcMdToPublishDir = copySrcMdToPublishDir;
-exports.copySrcJsToBuildDir = copySrcJsToBuildDir;
-exports.copyTestJsToTestingDir = copyTestJsToTestingDir;
-exports.copyJsonToTestingDir = copyJsonToTestingDir;
-exports.copySecretsToTestingDir = copySecretsToTestingDir;
-exports.copyJsonToBuildDir = copyJsonToBuildDir;
-exports.copySrcJsToReleaseDir = copySrcJsToReleaseDir;
-exports.copySrcJsToPublishDir = copySrcJsToPublishDir;
-exports.copyBuildJsToPublishDir = copyBuildJsToPublishDir;
-exports.copyBuildTypescriptDeclarationToPublishDir = copyBuildTypescriptDeclarationToPublishDir;
-
-exports.copyPackageJsonToBuildDir = copyPackageJsonToBuildDir;
-exports.copyPackageJsonToPublishDir = copyPackageJsonToPublishDir;
-exports.copyPackageJsonToLambdaLayerDir = copyPackageJsonToLambdaLayerDir;
-
-exports.npmForceUpdateProject = npmForceCoreLibraryUpdates;
-
-exports.npmInstallBuildDir = npmInstallBuildDir;
-exports.npmInstallLayerDir = npmInstallLayerDir;
-
-exports.packageLayerRelease = packageLayerRelease;
-exports.packageLambdaRelease = packageLambdaRelease;
-
-exports.incrementJsonPatch = incrementJsonPatch;
-exports.incrementJsonMinor = incrementJsonMinor;
-exports.incrementJsonMajor = incrementJsonMajor;
-
-// exports.deployLambda = deployLambda;
-
-exports.publish = publish;
-
-exports.gitAdd = gitAdd;
-exports.gitCommit = gitCommit;
-exports.gitCheckIn = gitCheckIn;
-exports.gitPush = gitPush;
-
-exports.samClean = samClean;
-exports.samNpmForceUpdateFunctionsProject = samNpmForceUpdateFunctionsProject;
-exports.samNpmForceUpdateLayersProject = samNpmForceUpdateLayersProject;
-exports.samCreateFunctionsReleases = samCreateFunctionsReleases;
-exports.samTranspileFunctionsTypescriptToReleases = samTranspileFunctionsTypescriptToReleases;
-exports.samTranspileFunctionsTestTypescriptToTesting = samTranspileFunctionsTestTypescriptToTesting;
-exports.samInstallFunctionsReleases = samInstallFunctionsReleases;
-exports.samCopyTestFiles = samCopyTestFiles;
-exports.samRefreshLayers = samRefreshLayers;
-exports.samBuild = samBuild;
-exports.samDeploy = samDeploy;
-
-exports.upgrade = series(
-  exports.ncuu,
-  exports.npmInstallProject
+export const upgrade = gulp.series(
+  ncuu,
+  npmInstallProject
 );
 
-function test ()  {
+export function test ()  {
   return src('./testing/**/*.test.js')
     .pipe(mocha());
 }
 
-exports.test = test;
-
-exports.buildTest = series(
+export const buildTest = gulp.series(
   cleanTesting,
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
@@ -757,7 +680,7 @@ exports.buildTest = series(
   test
 );
 
-exports.default = series(
+export default gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
@@ -776,7 +699,7 @@ exports.default = series(
 
 
 
-exports.patch = series(
+export const patch = gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
@@ -799,7 +722,7 @@ exports.patch = series(
   gitPush);
 
 
-exports.minor = series(
+export const minor = gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
@@ -820,7 +743,7 @@ exports.minor = series(
   gitCommit,
   gitPush);
 
-exports.major = series(
+export const major = gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,

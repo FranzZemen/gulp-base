@@ -1,5 +1,13 @@
-const gulpBase = require ('./Gulpbase').init(require('./package.json'));
-const {src, dest, series} = require('gulp');
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+import * as gulpBase from './Gulpbase.js';
+gulpBase.init(require('./package.json'));
+// const gulpBase = require ('./Gulpbase').init(require('./package.json'));
+import gulp from 'gulp';
+const src = gulp.src;
+const dest = gulp.dest;
+const series = gulp.series;
+// const {src, dest, series} = require('gulp');
 // For this one Npm package, src (Gulpbase.js) is not in src, so need local copy function.
 function copyGulpBaseToPublishDir() {
 return src([
@@ -9,7 +17,7 @@ return src([
   .pipe(dest(gulpBase.publishDir));
 }
 
-exports.default = series(
+export default  series(
   gulpBase.cleanRelease,
   gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
   gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
@@ -19,9 +27,9 @@ exports.default = series(
   copyGulpBaseToPublishDir,
   gulpBase.copyPackageJsonToPublishDir);
 
-exports.cleanPublish = gulpBase.cleanPublish;
+export const cleanPublish = gulpBase.cleanPublish;
 
-exports.patch = series(
+export const patch = series(
   gulpBase.cleanPublish,
   copyGulpBaseToPublishDir,
   gulpBase.incrementJsonPatch,
@@ -34,7 +42,7 @@ exports.patch = series(
   //gulpBase.gitCheckIn,
   //gulpBase.gitPush);
 
-exports.minor = series(
+export const minor = series(
   gulpBase.cleanPublish,
   copyGulpBaseToPublishDir,
   gulpBase.incrementJsonMinor,
@@ -45,7 +53,7 @@ exports.minor = series(
   gulpBase.gitCommit,
   gulpBase.gitPush);
 
-exports.major = series(
+export const major = series(
   gulpBase.cleanPublish,
   copyGulpBaseToPublishDir,
   gulpBase.incrementJsonMajor,
@@ -56,5 +64,5 @@ exports.major = series(
   gulpBase.gitCommit,
   gulpBase.gitPush);
 
-exports.npmForceUpdateProject = gulpBase.npmForceUpdateProject;
-exports.npmUpdateProject = gulpBase.npmUpdateProject;
+export const npmForceUpdateProject = gulpBase.npmForceUpdateProject;
+export const npmUpdateProject = gulpBase.npmUpdateProject;

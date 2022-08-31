@@ -1,6 +1,8 @@
-const exec = require('child_process').exec;
+import exec from 'child_process';
 
-exports.npmInstallProject = function npmInstallProject(cb) {
+//const exec = require('child_process').exec;
+
+export const npmInstallProject = function npmInstallProject(cb) {
   exec('npm install', {cwd: './'}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
@@ -9,7 +11,7 @@ exports.npmInstallProject = function npmInstallProject(cb) {
 };
 
 // Note this satisfies semver rules (will not update if semver rule does not allow)
-exports.npmUpdateProject = function npmUpdateProject(cb) {
+export const npmUpdateProject = function npmUpdateProject(cb) {
   exec('npm update',{cwd: './'}, (err, stdout, stderr) =>{
     console.log(stdout);
     console.log(stderr);
