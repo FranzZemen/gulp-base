@@ -411,7 +411,7 @@ export function gitPush(cb) {
   console.log('Pushing to ' + mainBranch);
   git.push('origin', mainBranch, function (err) {
     if (err) throw err;
-    cb();f
+    cb();
   });
 };
 
