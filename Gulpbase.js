@@ -7,7 +7,7 @@ import {deleteSync} from 'del';
 import * as fs from 'fs';
 import * as zip from 'gulp-zip';
 import * as path from 'path';
-import * as minimist from 'minimist';
+import minimist from 'minimist';
 import git from 'gulp-git';
 import debug from 'gulp-debug';
 import merge from 'merge-stream';
