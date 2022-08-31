@@ -15,7 +15,7 @@ import ts from 'gulp-typescript';
 import sourcemaps from 'gulp-sourcemaps';
 import mocha from 'gulp-mocha';
 import {npmInstallProject} from './npm-commands.js';
-import {npmUpdateProject} from './npm-commands.js';
+export {npmUpdateProject} from './npm-commands.js';
 import {ncu} from './ncu.js';
 import {ncuu} from './ncu.js';
 
@@ -660,7 +660,6 @@ export const setMainBranch = function(branch) {
 }
 
 export const npmForceUpdateProject = npmForceCoreLibraryUpdates;
-
 
 export const upgrade = gulp.series(
   ncuu,
