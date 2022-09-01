@@ -25,17 +25,17 @@ let unscopedName = null;
 let useSourcemaps = true;
 export let mainBranch = 'master'; // most repos still using master, later move this to main
 
-export const tsSrcDir = './ts-src';
-export const tsTestDir = './ts-test';
+export let tsSrcDir = './ts-src';
+export let tsTestDir = './ts-test';
 
 // Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
 // const tsDeclarationDir = './ts-d';
-export const srcDir = './src';
-export const testDir = './test';
-export const testingDir = './testing';
-export const buildDir = './build';
-export const releaseDir = './release';
-export const publishDir = './publish';
+export let srcDir = './src';
+export let testDir = './test';
+export let testingDir = './testing';
+export let buildDir = './build';
+export let releaseDir = './release';
+export let publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
 export function init(packageName, timeout=100, _useSourcemaps = true) {
