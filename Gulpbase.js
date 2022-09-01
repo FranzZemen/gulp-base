@@ -38,6 +38,45 @@ export let releaseDir = './release';
 export let publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
+
+export const setMainBranch = function(branch) {
+  mainBranch = branch;
+}
+
+export const setSrcDir = function(dir) {
+  srcDir = dir;
+}
+
+export const setTsSrcDir = function (dir) {
+  tsSrcDir = dir;
+}
+
+export const setTsTestDir = function (dir) {
+  tsTestDir = dir;
+}
+
+export const setTestDir = function (dir) {
+  testDir = dir;
+}
+
+export const setTestingDir = function (dir) {
+  testingDir = dir;
+}
+
+export const setBuildDir = function (dir) {
+  buildDir = dir;
+}
+
+export const setReleaseDir = function (dir) {
+  releaseDir = dir;
+}
+
+
+export const setPublishDir = function (dir) {
+  publishDir = dir;
+}
+
+
 export function init(packageName, timeout=100, _useSourcemaps = true) {
   gitTimeout = timeout;
   packageJson = packageName;
@@ -655,9 +694,6 @@ export function samDeploy(cb) {
 }
 
 
-export const setMainBranch = function(branch) {
-  mainBranch = branch;
-}
 
 export const npmForceUpdateProject = npmForceCoreLibraryUpdates;
 
