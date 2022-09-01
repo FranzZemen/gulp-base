@@ -160,7 +160,7 @@ export function copyBuildJsonToPublishDir() {
 }
 
 export function copySrcJsToBuildDir() {
-  return src(srcDir + '/**/*.js')
+  return src([srcDir + '/**/*.js', srcDir + '/**/*.d.ts'])
     .pipe(dest(buildDir));
 }
 
