@@ -107,13 +107,13 @@ export function cleanPublish(cb) {
 export function transpileTypescriptToBuildDir() {
   const tsProject = ts.createProject('tsconfig.json');
   if(useSourcemaps) {
-    return src(tsSrcDir + '/**/*.ts')
+    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
       .pipe(sourcemaps.init())
       .pipe(tsProject())
       .pipe(sourcemaps.write())
       .pipe(dest(buildDir));
   } else {
-    return src(tsSrcDir + '/**/*.ts')
+    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
       .pipe(tsProject())
       .pipe(dest(buildDir));
   }
@@ -122,20 +122,20 @@ export function transpileTypescriptToBuildDir() {
 export function transpileTestTypescriptToTestingDir() {
   const tsProject = ts.createProject('tsconfig.json');
   if(useSourcemaps) {
-    return src(tsTestDir + '/**/*.ts')
+    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
       .pipe(sourcemaps.init())
       .pipe(tsProject())
       .pipe(sourcemaps.write())
       .pipe(dest(testingDir));
   } else {
-    return src(tsTestDir + '/**/*.ts')
+    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
       .pipe(tsProject())
       .pipe(dest(testingDir));
   }
 }
 
 export function copyTestJsToTestingDir() {
-  return src(testDir + '/**/*.js')
+  return src([testDir + '/**/*.js',testDir + '/**/*.cjs',testDir + '/**/*.mjs'])
     .pipe(dest(testingDir));
 }
 
@@ -160,28 +160,28 @@ export function copyBuildJsonToPublishDir() {
 }
 
 export function copySrcJsToBuildDir() {
-  return src([srcDir + '/**/*.js', srcDir + '/**/*.d.ts'])
+  return src([srcDir + '/**/*.js', srcDir + '/**/*.mjs', srcDir + '/**/*.cjs', srcDir + '/**/*.d.ts', srcDir + '/**/*.d.mts', srcDir + '/**/*.d.cts'])
     .pipe(dest(buildDir));
 }
 
 export function copySrcJsToReleaseDir ()  {
-  return src(srcDir + '/**/*.js')
+  return src([srcDir + '/**/*.js', srcDir + '/**/*.mjs', srcDir + '/**/*.cjs'])
     .pipe(dest(releaseDir));
 };
 
 export function copyBuildJsToPublishDir() {
-  return src(buildDir + '/**/*.js')
+  return src([buildDir + '/**/*.js', buildDir + '/**/*.cjs', buildDir + '/**/*.mjs'])
     .pipe(dest(publishDir));
 }
 
 export function copyBuildTypescriptDeclarationToPublishDir() {
-  return src(buildDir + '/**/*.d.ts')
+  return src([buildDir + '/**/*.d.ts', buildDir + '/**/*.d.mts', buildDir + '/**/*.d.cts'])
     .pipe(dest(publishDir));
 }
 
 
 export function copySrcJsToPublishDir ()  {
-  return src(srcDir + '/**/*.js')
+  return src([srcDir + '/**/*.js', srcDir + '/**/*.mjs', srcDir + '/**/*.cjs', srcDir + '/**/*.d.ts', srcDir + '/**/*.d.mts', srcDir + '/**/*.d.cts'])
     .pipe(dest(publishDir));
 };
 
@@ -703,7 +703,7 @@ export const upgrade = gulp.series(
 );
 
 export function test ()  {
-  return src('./testing/**/*.test.js')
+  return src(['./testing/**/*.test.js', './testing/**/*.test.mjs', './testing/**/*.test.cjs'])
     .pipe(mocha());
 }
 
