@@ -363,7 +363,7 @@ export function npmInstallLayerDir(cb) {
 }
 
 export function publish(cb) {
-  exec('npm publish publish', {}, (err, stdout, stderr) => {
+  exec('npm publish ./publish', {}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     cb(err);

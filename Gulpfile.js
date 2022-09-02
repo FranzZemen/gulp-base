@@ -1,7 +1,7 @@
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+const requireModule = createRequire(import.meta.url);
 import * as gulpBase from './Gulpbase.js';
-gulpBase.init(require('./package.json'));
+gulpBase.init(requireModule('./package.json'));
 // const gulpBase = require ('./Gulpbase').init(require('./package.json'));
 import gulp from 'gulp';
 const src = gulp.src;
