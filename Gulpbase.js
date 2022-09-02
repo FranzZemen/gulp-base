@@ -122,13 +122,13 @@ export function transpileTypescriptToBuildDir() {
 export function transpileTestTypescriptToTestingDir() {
   const tsProject = ts.createProject('tsconfig.json');
   if(useSourcemaps) {
-    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
+    return src([tsTestDir + '/**/*.ts', tsTestDir + '/**/*.mts', tsTestDir + '/**/*.cts'])
       .pipe(sourcemaps.init())
       .pipe(tsProject())
       .pipe(sourcemaps.write())
       .pipe(dest(testingDir));
   } else {
-    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
+    return src([tsTestDir + '/**/*.ts', tsTestDir + '/**/*.mts', tsTestDir + '/**/*.cts'])
       .pipe(tsProject())
       .pipe(dest(testingDir));
   }
