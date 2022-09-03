@@ -25,8 +25,9 @@ const tsConfigTest = requireModule('./tsconfig.test.json');
 
 let packageJson = null;
 let gitTimeout = null;
+let tsConfigSrcJson = null;
+let tsConfigTestJson = null;
 let unscopedName = null;
-let useSourcemaps = true;
 export let mainBranch = 'master'; // most repos still using master, later move this to main
 
 // These constants are defined in the package's tsconfig.*.json
@@ -67,11 +68,12 @@ export const setPublishDir = function (dir) {
 }
 
 
-export function init(packageName, timeout=100, _useSourcemaps = true) {
+export function init(packageName, _tsConfigSrcJson, _tsConfigTestJson, timeout=100) {
+  tsConfigSrcJson = _tsConfigSrcJson;
+  tsConfigTestJson = _tsConfigTestJson;
   gitTimeout = timeout;
   packageJson = packageName;
   unscopedName = path.parse(packageJson.name).name;
-  useSourcemaps = _useSourcemaps;
 }
 
 export function cleanTesting(cb) {
