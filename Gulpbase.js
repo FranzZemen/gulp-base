@@ -1,3 +1,4 @@
+import { createRequire } from "module";
 import gulp from 'gulp';
 const src = gulp.src;
 const dest = gulp.dest;
@@ -11,13 +12,16 @@ import minimist from 'minimist';
 import git from 'gulp-git';
 import debug from 'gulp-debug';
 import merge from 'merge-stream';
-import ts from 'gulp-typescript';
-import sourcemaps from 'gulp-sourcemaps';
 import mocha from 'gulp-mocha';
 import {npmInstallProject} from './npm-commands.js';
 export {npmUpdateProject} from './npm-commands.js';
-import {ncu} from './ncu.js';
 import {ncuu} from './ncu.js';
+
+
+const requireModule = createRequire(import.meta.url);
+const tsConfigSrc = requireModule('./tsconfig.src.json');
+const tsConfigTest = requireModule('./tsconfig.test.json');
+
 
 let packageJson = null;
 let gitTimeout = null;
@@ -25,15 +29,15 @@ let unscopedName = null;
 let useSourcemaps = true;
 export let mainBranch = 'master'; // most repos still using master, later move this to main
 
-export let tsSrcDir = './ts-src';
-export let tsTestDir = './ts-test';
+// These constants are defined in the package's tsconfig.*.json
+export const tsSrcDir = './' + tsConfigSrc.compilerOptions.rootDir; //'./ts-src';
+export const buildDir = './' + tsConfigSrc.compilerOptions.outDir;  //'./build';
+export const tsTestDir = './' + tsConfigTest.compilerOptions.rootDir; //./ts-test';
+export const testingDir = './' + tsConfigTest.compilerOptions.outDir; //'./testing';
 
-// Forced deprecation use "declaration": true in tsconfig.json instead and task copyBuildIndexTypescriptDeclarationToPublishDir
-// const tsDeclarationDir = './ts-d';
+
 export let srcDir = './src';
 export let testDir = './test';
-export let testingDir = './testing';
-export let buildDir = './build';
 export let releaseDir = './release';
 export let publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
@@ -47,25 +51,11 @@ export const setSrcDir = function(dir) {
   srcDir = dir;
 }
 
-export const setTsSrcDir = function (dir) {
-  tsSrcDir = dir;
-}
-
-export const setTsTestDir = function (dir) {
-  tsTestDir = dir;
-}
 
 export const setTestDir = function (dir) {
   testDir = dir;
 }
 
-export const setTestingDir = function (dir) {
-  testingDir = dir;
-}
-
-export const setBuildDir = function (dir) {
-  buildDir = dir;
-}
 
 export const setReleaseDir = function (dir) {
   releaseDir = dir;
@@ -104,34 +94,22 @@ export function cleanPublish(cb) {
   cb();
 }
 
-export function transpileTypescriptToBuildDir() {
-  const tsProject = ts.createProject('tsconfig.json');
-  if(useSourcemaps) {
-    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
-      .pipe(sourcemaps.init())
-      .pipe(tsProject())
-      .pipe(sourcemaps.write())
-      .pipe(dest(buildDir));
-  } else {
-    return src([tsSrcDir + '/**/*.ts', tsSrcDir + '/**/*.mts', tsSrcDir + '/**/*.cts'])
-      .pipe(tsProject())
-      .pipe(dest(buildDir));
-  }
+export function tscTsSrc(cb) {
+  execSync('tsc --project tsconfig.src.json', {cwd: './'}, (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+  cb();
 }
 
-export function transpileTestTypescriptToTestingDir() {
-  const tsProject = ts.createProject('tsconfig.json');
-  if(useSourcemaps) {
-    return src([tsTestDir + '/**/*.ts', tsTestDir + '/**/*.mts', tsTestDir + '/**/*.cts'])
-      .pipe(sourcemaps.init())
-      .pipe(tsProject())
-      .pipe(sourcemaps.write())
-      .pipe(dest(testingDir));
-  } else {
-    return src([tsTestDir + '/**/*.ts', tsTestDir + '/**/*.mts', tsTestDir + '/**/*.cts'])
-      .pipe(tsProject())
-      .pipe(dest(testingDir));
-  }
+export function tscTsTest(cb) {
+    execSync('tsc --project tsconfig.test.json', {cwd: './'}, (err, stdout, stderr) => {
+      console.log(stdout);
+      console.log(stderr);
+      cb(err);
+    });
+    cb();
 }
 
 export function copyTestJsToTestingDir() {
@@ -532,7 +510,7 @@ function _samInstallFunctionsReleases(functions) {
 }
 
 //function transpileTypescriptToBuildDir() {
-//  const tsProject = ts.createProject('tsconfig.json');
+//  const tsProject = ts.createProject('tsconfig.src.json');
 //  return src(tsSrcDir + '/**/*.ts')
 //    .pipe(sourcemaps.init())
 //    .pipe(tsProject())
@@ -544,7 +522,7 @@ export function samTranspileFunctionsTypescriptToReleases(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
-    let tsProject = ts.createProject('tsconfig.json');
+    let tsProject = ts.createProject('tsconfig.src.json');
     let thisStream = src('./functions/' + lambdaFunction + '/ts-src/**/*.ts')
 //      .pipe(sourcemaps.init())
       .pipe(tsProject())
@@ -571,7 +549,7 @@ export function samTranspileFunctionsTestTypescriptToTesting(cb) {
   let functions = fs.readdirSync('./functions');
   let merged, last;
   functions.forEach((lambdaFunction) => {
-    let tsProject = ts.createProject('tsconfig.json');
+    let tsProject = ts.createProject('tsconfig.src.json');
     let thisStream = src('./functions/' + lambdaFunction + '/ts-test/**/*.ts')
       //      .pipe(sourcemaps.init())
       .pipe(tsProject())
@@ -711,7 +689,7 @@ export const buildTest = gulp.series(
   cleanTesting,
   copyTestJsToTestingDir,
   copyJsonToTestingDir,
-  transpileTestTypescriptToTestingDir,
+  tscTsTest,
   test
 );
 
@@ -719,7 +697,7 @@ export default gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
-  transpileTypescriptToBuildDir,
+  tscTsSrc,
   copySrcMdToPublishDir,
   copySrcJsToBuildDir,
   copyJsonToBuildDir,
@@ -728,17 +706,21 @@ export default gulp.series(
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
   copyBuildJsonToPublishDir,
-  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  tscTsTest,// Must be transpiled after publish dir as it refers to publish index.d.ts
   copyPackageJsonToPublishDir,
   test);
 
-
+export const clean = gulp.series(
+  cleanPublish,
+  cleanBuild,
+  cleanTesting
+);
 
 export const patch = gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
-  transpileTypescriptToBuildDir,
+  tscTsSrc,
   copySrcMdToPublishDir,
   copySrcJsToBuildDir,
   copyJsonToBuildDir,
@@ -747,7 +729,7 @@ export const patch = gulp.series(
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
   copyBuildJsonToPublishDir,
-  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   test,
   incrementJsonPatch,
   copyPackageJsonToPublishDir,
@@ -761,7 +743,7 @@ export const minor = gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
-  transpileTypescriptToBuildDir,
+  tscTsSrc,
   copySrcMdToPublishDir,
   copySrcJsToBuildDir,
   copyJsonToBuildDir,
@@ -769,7 +751,7 @@ export const minor = gulp.series(
   copyJsonToTestingDir,
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
-  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   test,
   incrementJsonMinor,
   copyPackageJsonToPublishDir,
@@ -782,7 +764,7 @@ export const major = gulp.series(
   cleanPublish,
   cleanBuild,
   cleanTesting,
-  transpileTypescriptToBuildDir,
+  tscTsSrc,
   copySrcMdToPublishDir,
   copySrcJsToBuildDir,
   copyJsonToBuildDir,
@@ -791,7 +773,7 @@ export const major = gulp.series(
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
   copyBuildJsonToPublishDir,
-  transpileTestTypescriptToTestingDir, // Must be transpiled after publish dir as it refers to publish index.d.ts
+  tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   test,
   incrementJsonMajor,
   copyPackageJsonToPublishDir,

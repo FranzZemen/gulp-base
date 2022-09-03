@@ -1,13 +1,16 @@
 import { createRequire } from "module";
-const requireModule = createRequire(import.meta.url);
+
 import * as gulpBase from './Gulpbase.js';
-gulpBase.init(requireModule('./package.json'));
-// const gulpBase = require ('./Gulpbase').init(require('./package.json'));
 import gulp from 'gulp';
 const src = gulp.src;
 const dest = gulp.dest;
 const series = gulp.series;
-// const {src, dest, series} = require('gulp');
+
+const requireModule = createRequire(import.meta.url);
+gulpBase.init(requireModule('./package.json'));
+
+
+
 // For this one Npm package, src (Gulpbase.js) is not in src, so need local copy function.
 function copyGulpBaseToPublishDir() {
 return src([
@@ -19,15 +22,17 @@ return src([
 
 export default  series(
   gulpBase.cleanRelease,
-  gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
+  gulpBase.tscTsSrc,
+  //gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
   gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
-  gulpBase.transpileTestTypescriptToTestingDir,
+  //gulpBase.transpileTestTypescriptToTestingDir,
   gulpBase.copyTestJsToTestingDir,
   gulpBase.copyBuildTypescriptDeclarationToPublishDir,
   copyGulpBaseToPublishDir,
   gulpBase.copyPackageJsonToPublishDir);
 
 export const cleanPublish = gulpBase.cleanPublish;
+export const clean = gulpBase.clean;
 
 export const patch = series(
   gulpBase.cleanPublish,
