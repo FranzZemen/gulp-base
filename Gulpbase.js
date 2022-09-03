@@ -19,22 +19,22 @@ import {ncuu} from './ncu.js';
 
 
 const requireModule = createRequire(import.meta.url);
-const tsConfigSrc = requireModule('./tsconfig.src.json');
-const tsConfigTest = requireModule('./tsconfig.test.json');
 
 
 let packageJson = null;
 let gitTimeout = null;
+let tsConfigSrcJsonFileName = null;
 let tsConfigSrcJson = null;
+let tsConfigTestJsonFileName = null;
 let tsConfigTestJson = null;
 let unscopedName = null;
 export let mainBranch = 'master'; // most repos still using master, later move this to main
 
-// These constants are defined in the package's tsconfig.*.json
-export const tsSrcDir = './' + tsConfigSrc.compilerOptions.rootDir; //'./ts-src';
-export const buildDir = './' + tsConfigSrc.compilerOptions.outDir;  //'./build';
-export const tsTestDir = './' + tsConfigTest.compilerOptions.rootDir; //./ts-test';
-export const testingDir = './' + tsConfigTest.compilerOptions.outDir; //'./testing';
+// These constants are defined in the package's tsconfig.*.json, and set through the init method.
+export let tsSrcDir = null;
+export let buildDir = null;
+export let tsTestDir = null;
+export let testingDir = null;
 
 
 export let srcDir = './src';
@@ -68,12 +68,19 @@ export const setPublishDir = function (dir) {
 }
 
 
-export function init(packageName, _tsConfigSrcJson, _tsConfigTestJson, timeout=100) {
-  tsConfigSrcJson = _tsConfigSrcJson;
-  tsConfigTestJson = _tsConfigTestJson;
+export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, timeout=100) {
   gitTimeout = timeout;
   packageJson = packageName;
   unscopedName = path.parse(packageJson.name).name;
+  
+  tsConfigSrcJsonFileName = _tsConfigSrcJsonFileName
+  tsConfigTestJsonFileName = _tsConfigTestJsonFilename
+  tsConfigSrcJson = requireModule(tsConfigSrcJsonFileName);
+  tsConfigTestJson = requireModule(tsConfigTestJsonFileName);
+  tsSrcDir = tsConfigSrcJson.compilerOptions.rootDir;
+  buildDir = tsConfigSrcJson.compilerOptions.outDir;
+  tsTestDir = tsConfigTestJson.compilerOptions.rootDir;
+  testingDir = tsConfigTestJson.compilerOptions.outDir;
 }
 
 export function cleanTesting(cb) {
@@ -97,7 +104,7 @@ export function cleanPublish(cb) {
 }
 
 export function tscTsSrc(cb) {
-  execSync('tsc --project ' + tsConfigSrcJson, {cwd: './'}, (err, stdout, stderr) => {
+  execSync('tsc --project ' + tsConfigSrcJsonFileName, {cwd: './'}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     cb(err);
@@ -106,7 +113,7 @@ export function tscTsSrc(cb) {
 }
 
 export function tscTsTest(cb) {
-    execSync('tsc --project ' + tsConfigTestJson, {cwd: './'}, (err, stdout, stderr) => {
+    execSync('tsc --project ' + tsConfigTestJsonFileName, {cwd: './'}, (err, stdout, stderr) => {
       console.log(stdout);
       console.log(stderr);
       cb(err);
