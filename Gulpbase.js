@@ -97,7 +97,7 @@ export function cleanPublish(cb) {
 }
 
 export function tscTsSrc(cb) {
-  execSync('tsc --project tsconfig.src.json', {cwd: './'}, (err, stdout, stderr) => {
+  execSync('tsc --project ' + tsConfigSrcJson, {cwd: './'}, (err, stdout, stderr) => {
     console.log(stdout);
     console.log(stderr);
     cb(err);
@@ -106,7 +106,7 @@ export function tscTsSrc(cb) {
 }
 
 export function tscTsTest(cb) {
-    execSync('tsc --project tsconfig.test.json', {cwd: './'}, (err, stdout, stderr) => {
+    execSync('tsc --project ' + tsConfigTestJson, {cwd: './'}, (err, stdout, stderr) => {
       console.log(stdout);
       console.log(stderr);
       cb(err);
