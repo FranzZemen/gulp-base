@@ -2,9 +2,8 @@ import { createRequire } from "module";
 import gulp from 'gulp';
 const src = gulp.src;
 const dest = gulp.dest;
-import {exec} from 'child_process';
-import {execSync} from 'child_process';
 import {deleteSync} from 'del';
+import {exec, execSync} from 'child_process';
 import * as fs from 'fs';
 import * as zip from 'gulp-zip';
 import * as path from 'path';
@@ -104,21 +103,19 @@ export function cleanPublish(cb) {
 }
 
 export function tscTsSrc(cb) {
-  execSync('tsc --project ' + tsConfigSrcJsonFileName, {cwd: './'}, (err, stdout, stderr) => {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+  const result = execSync('tsc --project ' + tsConfigSrcJsonFileName, {cwd: './', stdio: 'inherit'});
+  if(result) {
+    console.log(result);
+  }
   cb();
 }
 
 export function tscTsTest(cb) {
-    execSync('tsc --project ' + tsConfigTestJsonFileName, {cwd: './'}, (err, stdout, stderr) => {
-      console.log(stdout);
-      console.log(stderr);
-      cb(err);
-    });
-    cb();
+  const result = execSync('tsc --project ' + tsConfigTestJsonFileName, {cwd: './', stdio: 'inherit'});
+  if(result) {
+    console.log(result);
+  }
+  cb();
 }
 
 export function copyTestJsToTestingDir() {
