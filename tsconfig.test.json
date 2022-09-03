@@ -10,7 +10,7 @@
     "declaration": true,
     "esModuleInterop": true
   },
-  "include": ["ts-src/**/*.ts","ts-src/**/*.cts", "ts-src/**/*.mts"],
+  "include": ["ts-test/**/*.ts","ts-test/**/*.cts", "ts-test/**/*.mts"],
   "exclude": [
     "node_modules"
   ]
