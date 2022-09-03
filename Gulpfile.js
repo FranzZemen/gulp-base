@@ -1,4 +1,5 @@
 import { createRequire } from "module";
+import {cwd} from 'process';
 
 import * as gulpBase from './Gulpbase.js';
 import gulp from 'gulp';
@@ -7,7 +8,7 @@ const dest = gulp.dest;
 const series = gulp.series;
 
 const requireModule = createRequire(import.meta.url);
-gulpBase.init(requireModule('./package.json'));
+gulpBase.init(requireModule('./package.json'), cwd() + '/tsconfig.src.json', cwd() + '/tsconfig.test.json', 100);
 
 
 
