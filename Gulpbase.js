@@ -42,6 +42,10 @@ export let releaseDir = './release';
 export let publishDir = './publish';
 const lambdaLayerDir = buildDir + '/nodejs';
 
+const unwantedFiles = [
+  './node_modules/@types/cacheable-request'
+]
+
 
 export const setMainBranch = function(branch) {
   mainBranch = branch;
@@ -84,6 +88,11 @@ export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFil
 
 export function cleanTesting(cb) {
   deleteSync(testingDir);
+  cb();
+}
+
+export function cleanUnwantedFiles(cb) {
+  deleteSync(unwantedFiles);
   cb();
 }
 
@@ -717,12 +726,14 @@ export default gulp.series(
   test);
 
 export const clean = gulp.series(
+  cleanUnwantedFiles,
   cleanPublish,
   cleanBuild,
   cleanTesting
 );
 
 export const patch = gulp.series(
+  cleanUnwantedFiles,
   cleanPublish,
   cleanBuild,
   cleanTesting,
@@ -746,6 +757,7 @@ export const patch = gulp.series(
 
 
 export const minor = gulp.series(
+  cleanUnwantedFiles,
   cleanPublish,
   cleanBuild,
   cleanTesting,
@@ -767,6 +779,7 @@ export const minor = gulp.series(
   gitPush);
 
 export const major = gulp.series(
+  cleanUnwantedFiles,
   cleanPublish,
   cleanBuild,
   cleanTesting,
