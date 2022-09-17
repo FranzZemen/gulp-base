@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "10.1.7",
+  "version": "10.1.8",
   "description": "Common Gulp base",
   "main": "Gulpbase.js",
   "type": "module",

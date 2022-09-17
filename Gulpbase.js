@@ -709,6 +709,7 @@ export const buildTest = gulp.series(
 );
 
 export default gulp.series(
+  cleanUnwantedFiles,
   cleanPublish,
   cleanBuild,
   cleanTesting,
