@@ -40,6 +40,8 @@ export let srcDir = './src';
 export let testDir = './test';
 export let releaseDir = './release';
 export let publishDir = './publish';
+
+export let timeout = 2000;
 const lambdaLayerDir = buildDir + '/nodejs';
 
 const unwantedFiles = [
@@ -68,6 +70,10 @@ export const setReleaseDir = function (dir) {
 
 export const setPublishDir = function (dir) {
   publishDir = dir;
+}
+
+export const setMochaTimeout = function(_timeout) {
+  timeout = _timeout;
 }
 
 
@@ -697,7 +703,7 @@ export const upgrade = gulp.series(
 
 export function test ()  {
   return src(['./testing/**/*.test.js', './testing/**/*.test.mjs', './testing/**/*.test.cjs'])
-    .pipe(mocha());
+    .pipe(mocha({timeout}));
 }
 
 export const buildTest = gulp.series(
