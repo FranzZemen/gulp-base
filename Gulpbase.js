@@ -22,6 +22,7 @@ const requireModule = createRequire(import.meta.url);
 
 let packageJson = null;
 let gitTimeout = null;
+let npmTimeout = null;
 let tsConfigSrcJsonFileName = null;
 let tsConfigSrcJson = null;
 let tsConfigTestJsonFileName = null;
@@ -41,7 +42,7 @@ export let testDir = './test';
 export let releaseDir = './release';
 export let publishDir = './publish';
 
-export let timeout = 2000;
+export let mochaTimeout = 2000;
 const lambdaLayerDir = buildDir + '/nodejs';
 
 const unwantedFiles = [
@@ -72,13 +73,23 @@ export const setPublishDir = function (dir) {
   publishDir = dir;
 }
 
+
 export const setMochaTimeout = function(_timeout) {
-  timeout = _timeout;
+  mochaTimeout = _timeout;
+}
+
+export const setGitTimeout = function(_timeout) {
+  gitTimeout = _timeout;
+}
+
+export const setNpmTimeout = function(_timeout) {
+  npmTimeout = _timeout;
 }
 
 
-export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, timeout=100) {
-  gitTimeout = timeout;
+export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, _gitTimeout=100, _npmTimeout = 5000) {
+  gitTimeout = _gitTimeout;
+  npmTimeout = _npmTimeout;
   packageJson = packageName;
   unscopedName = path.parse(packageJson.name).name;
   
@@ -363,9 +374,13 @@ export function npmInstallLayerDir(cb) {
 
 export function publish(cb) {
   exec('npm publish ./publish', {}, (err, stdout, stderr) => {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
+    console.log(`Setting npm post-publish delay of ${npmTimeout} millis`);
+    setTimeout(() => {
+      console.log(stdout);
+      console.log(stderr);
+      cb(err);
+      cb();
+    }, npmTimeout)
   });
 }
 
@@ -703,7 +718,7 @@ export const upgrade = gulp.series(
 
 export function test ()  {
   return src(['./testing/**/*.test.js', './testing/**/*.test.mjs', './testing/**/*.test.cjs'])
-    .pipe(mocha({timeout}));
+    .pipe(mocha({timeout: mochaTimeout}));
 }
 
 export const buildTest = gulp.series(
