@@ -87,7 +87,7 @@ export const setNpmTimeout = function(_timeout) {
 }
 
 
-export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, _gitTimeout=100, _npmTimeout = 1000) {
+export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, _gitTimeout=100, _npmTimeout = 10000) {
   gitTimeout = _gitTimeout;
   npmTimeout = _npmTimeout;
   packageJson = packageName;
@@ -373,6 +373,13 @@ export function npmInstallLayerDir(cb) {
 }
 
 export function publish(cb) {
+  const result = execSync('npm publish ./publish', {});
+  console.log(result);
+  console.log(`Setting npm post-publish delay of ${npmTimeout} millis`);
+  setTimeout(() => {
+    cb();
+  }, npmTimeout)
+  /*
   exec('npm publish ./publish', {}, (err, stdout, stderr) => {
     console.log(`Setting npm post-publish delay of ${npmTimeout} millis`);
     setTimeout(() => {
@@ -382,6 +389,8 @@ export function publish(cb) {
       cb();
     }, npmTimeout)
   });
+  
+   */
 }
 
 
