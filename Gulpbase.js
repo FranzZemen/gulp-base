@@ -373,8 +373,9 @@ export function npmInstallLayerDir(cb) {
 }
 
 export function publish(cb) {
+  console.log(`npm publish ./publish`);
   const result = execSync('npm publish ./publish', {});
-  console.log(result);
+  console.log(result.toString('utf-8'));
   console.log(`Setting npm post-publish delay of ${npmTimeout} millis`);
   setTimeout(() => {
     cb();
