@@ -87,7 +87,7 @@ export const setNpmTimeout = function(_timeout) {
 }
 
 
-export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, _gitTimeout=100, _npmTimeout = 10000) {
+export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, _gitTimeout=100, _npmTimeout = 5000) {
   gitTimeout = _gitTimeout;
   npmTimeout = _npmTimeout;
   packageJson = packageName;
