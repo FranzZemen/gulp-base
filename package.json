@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "12.0.3",
+  "version": "12.0.4",
   "description": "Common Gulp base",
   "main": "Gulpbase.js",
   "type": "module",
@@ -29,7 +29,7 @@
     "gulp-zip": "^5.1.0",
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.7",
-    "mocha": "^10.0.0",
+    "mocha": "^10.1.0",
     "typescript": "^4.8.4"
   }
 }
