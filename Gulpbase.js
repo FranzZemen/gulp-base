@@ -12,6 +12,7 @@ import git from 'gulp-git';
 import debug from 'gulp-debug';
 import merge from 'merge-stream';
 import mocha from 'gulp-mocha';
+import {default as replace} from 'gulp-replace';
 import {npmInstallProject} from './npm-commands.js';
 export {npmUpdateProject} from './npm-commands.js';
 import {ncuu} from './ncu.js';
@@ -19,7 +20,7 @@ import {ncuu} from './ncu.js';
 
 const requireModule = createRequire(import.meta.url);
 
-
+let cleanTranspiled = false;
 let packageJson = null;
 let gitTimeout = null;
 let npmTimeout = null;
@@ -49,6 +50,9 @@ const unwantedFiles = [
   './node_modules/@types/cacheable-request'
 ]
 
+export const setCleanTranspiled = function(flag) {
+  cleanTranspiled = flag;
+}
 
 export const setMainBranch = function(branch) {
   mainBranch = branch;
@@ -142,6 +146,16 @@ export function tscTsTest(cb) {
     console.log(result);
   }
   cb();
+}
+
+export function cleanTranspiledCode(cb) {
+  if(cleanTranspiled) {
+    return src([buildDir + '/**/*.cjs'])
+      .pipe(replace(/export\s*{};/g,''))
+      .pipe(dest(buildDir));
+  } else {
+    cb();
+  }
 }
 
 export function copyTestJsToTestingDir() {

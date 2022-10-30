@@ -1,5 +1,7 @@
+import {deleteSync} from 'del';
 import { createRequire } from "module";
 import {cwd} from 'process';
+import {buildDir, cleanTranspiledCode, publishDir, releaseDir} from './Gulpbase.js';
 
 import * as gulpBase from './Gulpbase.js';
 import gulp from 'gulp';
@@ -9,6 +11,7 @@ const series = gulp.series;
 
 const requireModule = createRequire(import.meta.url);
 gulpBase.init(requireModule('./package.json'), cwd() + '/tsconfig.src.json', cwd() + '/tsconfig.test.json', 100);
+gulpBase.setCleanTranspiled(true);
 
 
 
@@ -21,9 +24,16 @@ return src([
   .pipe(dest(gulpBase.publishDir));
 }
 
-export default  series(
+function cleanPublishExtras(cb) {
+  deleteSync(`${publishDir}/someTsDir`);
+  deleteSync(`${publishDir}/clean-export*.*`)
+  cb();
+}
+
+export default series(
   gulpBase.cleanRelease,
   gulpBase.tscTsSrc,
+  gulpBase.cleanTranspiledCode,
   //gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
   gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
   //gulpBase.transpileTestTypescriptToTestingDir,
