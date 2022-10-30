@@ -1,7 +1,7 @@
 import {deleteSync} from 'del';
 import { createRequire } from "module";
 import {cwd} from 'process';
-import {buildDir, cleanTranspiledCode, publishDir, releaseDir} from './Gulpbase.js';
+import {buildDir, cleanTranspiledSrc, publishDir, releaseDir} from './Gulpbase.js';
 
 import * as gulpBase from './Gulpbase.js';
 import gulp from 'gulp';
@@ -33,7 +33,7 @@ function cleanPublishExtras(cb) {
 export default series(
   gulpBase.cleanRelease,
   gulpBase.tscTsSrc,
-  gulpBase.cleanTranspiledCode,
+  gulpBase.cleanTranspiledSrc,
   //gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
   gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
   //gulpBase.transpileTestTypescriptToTestingDir,
