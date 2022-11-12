@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "16.4.2",
+  "version": "16.4.3",
   "description": "Common Gulp base",
   "type": "module",
   "scripts": {

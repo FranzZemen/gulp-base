@@ -112,7 +112,7 @@ export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000, 
   mainBranch = _mainBranch;
   cwd = _cwd;
   
-  tsConfigBuildCjs = loadJSON(tsConfigBuildCjsFileName);
+  tsConfigBuildCjs = loadJSON(join(cwd,tsConfigBuildCjsFileName));
   tsConfigBuildMjs = loadJSON(join(cwd,tsConfigBuildMjsFileName));
   tsConfigBuildTestCjs = loadJSON(join(cwd,tsConfigBuildTestCjsFileName));
   tsConfigBuildTestMjs = loadJSON(join(cwd,tsConfigBuildTestMjsFileName));
