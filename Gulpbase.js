@@ -186,18 +186,12 @@ export function tscTsTest(cb) {
 export function cleanTranspiledSrc(cb) {
   if (cleanCjsTranspilation) {
     if (generateCommonJS) {
-      src([buildCjsDir + '/**/*.cjs'])
+      return src([buildCjsDir + '/**/*.cjs'])
         .pipe(replace(/export\s*{};/g, ''))
         .pipe(dest(buildCjsDir));
     }
-    if(generateES) {
-      return src([buildMjsDir + '/**/*.cjs'])
-        .pipe(replace(/export\s*{};/g, ''))
-        .pipe(dest(buildMjsDir));
-    }
-  } else {
-    cb();
   }
+  cb();
 }
 
 // Clean cjs files of the unwanted export {}
