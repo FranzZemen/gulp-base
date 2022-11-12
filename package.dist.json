@@ -2,16 +2,6 @@
   "name": "@franzzemen/gulp-base",
   "version": "15.0.0",
   "description": "Common Gulp base",
-  "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/mjs/index.js",
-  "types": "dist/mjs/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/mjs/index.js",
-      "require": "./dist/cjs/index.js"
-    }
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,9 +19,6 @@
     "gulp": "^4.0.2"
   },
   "dependencies": {
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.0",
-    "chai": "^4.3.7",
     "del": "^7.0.0",
     "gulp-copy": "^4.0.1",
     "gulp-debug": "^4.0.0",

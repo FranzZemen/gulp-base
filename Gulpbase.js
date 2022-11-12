@@ -1,114 +1,117 @@
-import { createRequire } from "module";
-import gulp from 'gulp';
-const src = gulp.src;
-const dest = gulp.dest;
+import {execSync} from 'child_process';
 import {deleteSync} from 'del';
-import {exec, execSync} from 'child_process';
 import * as fs from 'fs';
-import * as zip from 'gulp-zip';
-import * as path from 'path';
-import minimist from 'minimist';
+import gulp from 'gulp';
 import git from 'gulp-git';
-import debug from 'gulp-debug';
-import merge from 'merge-stream';
 import mocha from 'gulp-mocha';
 import {default as replace} from 'gulp-replace';
-import {npmInstallProject} from './npm-commands.js';
+import _ from 'lodash';
+import minimist from 'minimist';
+import {createRequire} from 'module';
+import {inspect} from 'node:util';
+import * as path from 'path';
+
+const src = gulp.src;
+const dest = gulp.dest;
+
 export {npmUpdateProject} from './npm-commands.js';
-import {ncuu} from './ncu.js';
 
 
 const requireModule = createRequire(import.meta.url);
+const loadJSON = requireModule;
 
-let cleanTranspiled = false;
+let generateCommonJS = true;
+// When transpiling Cjs files, an export {} appears at the end.  Lots of threads on this.  For us, we just clean it out.
+// However, we shouldn't be transpiling to .cjs with our bi-loader build (commonjs and cjs)
+let cleanCjsTranspilation = true;
+// The top level package.json as an object
 let packageJson = null;
+// The base json for distributions
+let packageDistJSon = null;
+// Timeout for git
 let gitTimeout = null;
+// We want to wait after an NPM publish to support npmu as (especially on Sundays) npm is slow to make freshly published packages visible
 let npmTimeout = null;
-let tsConfigSrcJsonFileName = null;
-let tsConfigSrcJson = null;
-let tsConfigTestJsonFileName = null;
-let tsConfigTestJson = null;
-let unscopedName = null;
-export let mainBranch = 'master'; // most repos still using master, later move this to main
 
-// These constants are defined in the package's tsconfig.*.json, and set through the init method.
-export let tsSrcDir = null;
-export let buildDir = null;
-export let tsTestDir = null;
-export let testingDir = null;
+// ts-config file for commonjs processing.  We do NOT use .cts files and .mts files
+let tsConfigBuildCjsFileName = './tsconfig.build-cjs.json';
+let tsConfigBuildCjs = loadJSON(tsConfigBuildCjsFileName);
+// ts-config file for es processing.  We do NOT use .cts and .mts files.
+let tsConfigBuildMjsFileName = './tsconfig.build-mjs.json';
+let tsConfigBuildMjs = loadJSON(tsConfigBuildMjsFileName);
+// ts-config file for commonjs processing.
+let tsConfigBuildTestCjsFileName = './tsconfig.build-test-cjs.json';
+let tsConfigBuildTestCjs = loadJSON(tsConfigBuildTestCjsFileName);
+// ts-config file for es processing
+let tsConfigBuildTestMjsFileName = './tsconfig.build-test-mjs.json';
+let tsConfigBuildTestMjs = loadJSON(tsConfigBuildTestMjsFileName);
 
+// The main branch
+export let mainBranch = 'master'; // TODO: Do this once and for all!
 
-export let srcDir = './src';
-export let testDir = './test';
-export let releaseDir = './release';
+// Source folders
+// Source for typescript and javascript.  Javascript extensions should be .cjs or .mjs or one of the distributions won't work!
+export let tsSrcDir = './ts-src';
+// Source for typescript tests and/or javascript tests. Javascript extensions should be .cjs or .mjs or one of the distributions won't work!
+export let tsTestDir = './ts-test';
+// Intermediate transpile target directory for typescript to commonjs
+export let buildCjsDir = './build-cjs';
+// Intermediate transpile target directory for typescript to es
+export let buildMjsDir = './build-mjs';
+// Transpile target directory for typescript tests to common js
+export let testingCjsDir = './testing-cjs';
+// Transpile target directory for typescript tests to es
+export let testingMjsDir = './testing-mjs';
+// TODO Unsure what this is?
+// export let releaseDir = './release';
+// NPM publish folder
 export let publishDir = './publish';
-
+// CommonJS distribution
+export let cjsDistDir = publishDir + '/dist/cjs';
+export let mjsDistDir = publishDir + '/dist/mjs';
+// Timeout for tests
 export let mochaTimeout = 2000;
-const lambdaLayerDir = buildDir + '/nodejs';
 
+// Sometimes things don't go right, for example cacheable-request is incompatible with other packages, and we don't use it anyways
 const unwantedFiles = [
   './node_modules/@types/cacheable-request'
-]
+];
 
-export const setCleanTranspiled = function(flag) {
-  cleanTranspiled = flag;
-}
-
-export const setMainBranch = function(branch) {
+// Setters
+export const setGenerateCommonJS = function (flag) {
+  generateCommonJS = flag;
+};
+export const setCleanTranspiled = function (flag) {
+  cleanCjsTranspilation = flag;
+};
+export const setMainBranch = function (branch) {
   mainBranch = branch;
-}
-
-export const setSrcDir = function(dir) {
-  srcDir = dir;
-}
-
-
-export const setTestDir = function (dir) {
-  testDir = dir;
-}
-
-
-export const setReleaseDir = function (dir) {
-  releaseDir = dir;
-}
-
-
-export const setPublishDir = function (dir) {
-  publishDir = dir;
-}
-
-
-export const setMochaTimeout = function(_timeout) {
+};
+export const setMochaTimeout = function (_timeout) {
   mochaTimeout = _timeout;
-}
+};
 
-export const setGitTimeout = function(_timeout) {
+export const setGitTimeout = function (_timeout) {
   gitTimeout = _timeout;
-}
+};
 
-export const setNpmTimeout = function(_timeout) {
+export const setNpmTimeout = function (_timeout) {
   npmTimeout = _timeout;
-}
+};
 
-
-export function init(packageName, _tsConfigSrcJsonFileName, _tsConfigTestJsonFilename, _gitTimeout=100, _npmTimeout = 5000) {
+// Init for package json and files
+export function init(_packageJson, _packageDistJson,  _gitTimeout = 100, _npmTimeout = 5000, _mainBranch) {
   gitTimeout = _gitTimeout;
   npmTimeout = _npmTimeout;
-  packageJson = packageName;
-  unscopedName = path.parse(packageJson.name).name;
-  
-  tsConfigSrcJsonFileName = _tsConfigSrcJsonFileName
-  tsConfigTestJsonFileName = _tsConfigTestJsonFilename
-  tsConfigSrcJson = requireModule(tsConfigSrcJsonFileName);
-  tsConfigTestJson = requireModule(tsConfigTestJsonFileName);
-  tsSrcDir = tsConfigSrcJson.compilerOptions.rootDir;
-  buildDir = tsConfigSrcJson.compilerOptions.outDir;
-  tsTestDir = tsConfigTestJson.compilerOptions.rootDir;
-  testingDir = tsConfigTestJson.compilerOptions.outDir;
+  packageJson = _packageJson;
+  packageDistJSon = _packageDistJson;
+  mainBranch = _mainBranch;
 }
 
+// Tasks
 export function cleanTesting(cb) {
-  deleteSync(testingDir);
+  deleteSync(testingCjsDir);
+  deleteSync(testingMjsDir);
   cb();
 }
 
@@ -118,126 +121,170 @@ export function cleanUnwantedFiles(cb) {
 }
 
 export function cleanBuild(cb) {
-  deleteSync(buildDir);
+  deleteSync(buildCjsDir);
+  deleteSync(buildMjsDir);
   cb();
 }
 
-export function cleanRelease(cb) {
-  deleteSync(releaseDir);
-  cb();
-}
 
 export function cleanPublish(cb) {
   deleteSync(publishDir);
   cb();
 }
 
+// Transpile source.  Project files should point to respective build folders.
 export function tscTsSrc(cb) {
-  const result = execSync('tsc --project ' + tsConfigSrcJsonFileName, {cwd: './', stdio: 'inherit'});
-  if(result) {
-    console.log(result);
-  }
-  cb();
-}
-
-export function tscTsTest(cb) {
-  const result = execSync('tsc --project ' + tsConfigTestJsonFileName, {cwd: './', stdio: 'inherit'});
-  if(result) {
-    console.log(result);
-  }
-  cb();
-}
-
-export function cleanTranspiledSrc(cb) {
-  if(cleanTranspiled) {
-    return src([buildDir + '/**/*.cjs'])
-      .pipe(replace(/export\s*{};/g,''))
-      .pipe(dest(buildDir));
-  } else {
-    cb();
-  }
-}
-
-export function cleanTranspiledTest(cb) {
-  if(cleanTranspiled) {
-    return src([testingDir + '/**/*.cjs'])
-      .pipe(replace(/export\s*{};/g,''))
-      .pipe(dest(testingDir));
-  } else {
-    cb();
-  }
-}
-
-export function copyTestJsToTestingDir() {
-  return src([testDir + '/**/*.js',testDir + '/**/*.cjs',testDir + '/**/*.mjs'])
-    .pipe(dest(testingDir));
-}
-
-export function copyJsonToTestingDir() {
-  return src([testDir + '/**/*.json', tsTestDir + '/**/*.json'])
-    .pipe(dest(testingDir));
-}
-
-export function copySecretsToTestingDir() {
-  return src([testDir + '/**/*.pem', tsTestDir + '/**/*.pem'])
-    .pipe(dest(testingDir));
-}
-
-export function copyJsonToBuildDir() {
-  return src([srcDir + '/**/*.json', tsSrcDir + '/**/*.json'])
-    .pipe(dest(buildDir));
-}
-
-export function copyBuildJsonToPublishDir() {
-  return src([buildDir + '/**/*.json'])
-    .pipe(dest(publishDir));
-}
-
-export function copySrcJsToBuildDir() {
-  return src([srcDir + '/**/*.js', srcDir + '/**/*.mjs', srcDir + '/**/*.cjs', srcDir + '/**/*.d.ts', srcDir + '/**/*.d.mts', srcDir + '/**/*.d.cts'])
-    .pipe(dest(buildDir));
-}
-
-export function copySrcJsToReleaseDir ()  {
-  return src([srcDir + '/**/*.js', srcDir + '/**/*.mjs', srcDir + '/**/*.cjs'])
-    .pipe(dest(releaseDir));
-};
-
-export function copyBuildJsToPublishDir() {
-  return src([buildDir + '/**/*.js', buildDir + '/**/*.cjs', buildDir + '/**/*.mjs'])
-    .pipe(dest(publishDir));
-}
-
-export function copyBuildTypescriptDeclarationToPublishDir() {
-  return src([buildDir + '/**/*.d.ts', buildDir + '/**/*.d.mts', buildDir + '/**/*.d.cts'])
-    .pipe(dest(publishDir));
-}
-
-
-export function copySrcJsToPublishDir ()  {
-  return src([srcDir + '/**/*.js', srcDir + '/**/*.mjs', srcDir + '/**/*.cjs', srcDir + '/**/*.d.ts', srcDir + '/**/*.d.mts', srcDir + '/**/*.d.cts'])
-    .pipe(dest(publishDir));
-};
-
-export function copySrcMdToPublishDir () {
-  return src([srcDir + '/**/*.md', './*.md'])
-    .pipe(dest(publishDir));
-}
-
-export function copyPackageJsonToBuildDir(cb) {
-  try {
-    fs.mkdirSync(buildDir);
-  } catch (error) {
-    if(error.code !== 'EEXIST') {
-      cb(error);
+  let result;
+  if (generateCommonJS) {
+    result = execSync('tsc --project ' + tsConfigBuildCjsFileName, {cwd: './', stdio: 'inherit'});
+    if (result) {
+      console.log(result);
     }
   }
-  fs.writeFileSync(buildDir + '/package.json', JSON.stringify(packageJson, null, 2));
+  result = execSync('tsc --project ' + tsConfigBuildMjsFileName, {cwd: './', stdio: 'inherit'});
+  if (result) {
+    console.log(result);
+  }
   cb();
 }
 
+// Transpile tests.  Project files should point to respective testing folders
+export function tscTsTest(cb) {
+  let result;
+  if (generateCommonJS) {
+    result = execSync('tsc --project ' + tsConfigBuildTestCjsFileName, {cwd: './', stdio: 'inherit'});
+    if (result) {
+      console.log(result);
+    }
+  }
+  result = execSync('tsc --project ' + tsConfigBuildTestMjsFileName, {cwd: './', stdio: 'inherit'});
+  if (result) {
+    console.log(result);
+  }
+  cb();
+}
 
-export function copyPackageJsonToPublishDir(cb) {
+// Clean cjs files of the unwanted export {}
+export function cleanTranspiledSrc(cb) {
+  if (cleanCjsTranspilation) {
+    if (generateCommonJS) {
+      src([buildCjsDir + '/**/*.cjs'])
+        .pipe(replace(/export\s*{};/g, ''))
+        .pipe(dest(buildCjsDir));
+    }
+    return src([buildMjsDir + '/**/*.cjs'])
+      .pipe(replace(/export\s*{};/g, ''))
+      .pipe(dest(buildMjsDir));
+  } else {
+    cb();
+  }
+}
+
+// Clean cjs files of the unwanted export {}
+export function cleanTranspiledTest(cb) {
+  if (cleanCjsTranspilation) {
+    if (generateCommonJS) {
+      src([testingCjsDir + '/**/*.cjs'])
+        .pipe(replace(/export\s*{};/g, ''))
+        .pipe(dest(testingCjsDir));
+    }
+    return src([testingMjsDir + '/**/*.cjs'])
+      .pipe(replace(/export\s*{};/g, ''))
+      .pipe(dest(testingMjsDir));
+  } else {
+    cb();
+  }
+}
+
+// Copy Javascript and any standalone type definitions to build
+export function copySrcJsToBuildDir() {
+  if (generateCommonJS) {
+    src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
+      .pipe(dest(buildCjsDir));
+  }
+  return src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
+    .pipe(dest(buildMjsDir));
+}
+
+// Copy Javascript tests to testing
+export function copyTestJsToTestingDir() {
+  if (generateCommonJS) {
+    src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+      .pipe(dest(testingCjsDir));
+  }
+  return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+    .pipe(dest(testingMjsDir));
+}
+
+// Copy supporting JSON to build directories
+export function copyJsonToBuildDir() {
+  if (generateCommonJS) {
+    src([tsSrcDir + '/**/*.json'])
+      .pipe(dest(buildCjsDir));
+  }
+  return src([tsSrcDir + '/**/*.json'])
+    .pipe(dest(buildMjsDir));
+}
+
+// Copy JSON supporting tests
+export function copyJsonToTestingDir(cb) {
+  if (generateCommonJS) {
+    src([tsTestDir + '/**/*.json'])
+      .pipe(dest(testingCjsDir));
+  }
+  return src([tsTestDir + '/**/*.json'])
+    .pipe(dest(testingMjsDir));
+}
+
+// Copy JSON to distributions
+export function copyBuildJsonToPublishDir() {
+  if (generateCommonJS) {
+    src([buildCjsDir + '/**/*.json'])
+      .pipe(dest(cjsDistDir));
+  }
+  return src([buildMjsDir + '/**/*.json'])
+    .pipe(dest(mjsDistDir));
+}
+
+// Copy wikis
+export function copySrcMdToPublishDir() {
+  if (generateCommonJS) {
+    src([tsSrcDir + '/**/*.md', './*.md'])
+      .pipe(dest(cjsDistDir));
+  }
+  return src([tsSrcDir + '/**/*.md', './*.md'])
+    .pipe(dest(mjsDistDir));
+}
+
+// DELETE
+//export function copySrcJsToReleaseDir ()  {
+//  return src([jsSrcDir + '/**/*.js', jsSrcDir + '/**/*.mjs', jsSrcDir + '/**/*.cjs'])
+//    .pipe(dest(releaseDir));
+//};
+
+
+// Copy all Javascript to publish distributions
+export function copyBuildJsToPublishDir() {
+  if (generateCommonJS) {
+    src([buildCjsDir + '/**/*.js', buildCjsDir + '/**/*.cjs', buildCjsDir + '/**/*.mjs'])
+      .pipe(dest(cjsDistDir));
+  }
+  return src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
+    .pipe(dest(mjsDistDir));
+}
+
+// Copy type declarations
+export function copyBuildTypescriptDeclarationToPublishDir() {
+  if (generateCommonJS) {
+    src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
+      .pipe(dest(cjsDistDir));
+  }
+  return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
+    .pipe(dest(mjsDistDir));
+}
+// Copy the package JSON file to the distribution folders
+export function copyPackageJsonsToPublishDir(cb) {
+  
   try {
     fs.mkdirSync(publishDir);
   } catch (error) {
@@ -245,62 +292,48 @@ export function copyPackageJsonToPublishDir(cb) {
       cb(error);
     }
   }
+  try {
+    fs.mkdirSync(`${publishDir}/dist`);
+  } catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  try {
+    fs.mkdirSync(cjsDistDir);
+  } catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  try {
+    fs.mkdirSync(mjsDistDir);
+  } catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+ 
+  delete packageJson.type;
+  
+  const cjsPackageJson = _.merge({}, packageDistJSon, {type: 'commonjs'});
+  const mjsPackageJson = _.merge({}, packageDistJSon, {type: 'module'});
+  
+  // Write the dist package.json as well as the publish one
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(packageJson, null, 2));
+  fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
+  fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
+  fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
   cb();
 }
 
-/**
- * @deprecated
- * @param cb
- */
-export function copyPackageJsonToLambdaLayerDir(cb) {
-  try {
-    fs.mkdirSync(buildDir);
-  }
-  catch (error) {
-    if(error.code !== 'EEXIST') {
-      cb(error);
-    }
-  }
-  try {
-    fs.mkdirSync(lambdaLayerDir);
-  }
-  catch (error) {
-    if(error.code !== 'EEXIST') {
-      cb(error);
-    }
-  }
-  fs.writeFileSync(lambdaLayerDir + '/package.json', JSON.stringify(packageJson, null, 2));
-  cb();
-}
-
-/**
- * @deprecated
- * @returns {*}
- */
-export function packageLayerRelease() {
-  return src(buildDir + '/**/*.*')
-    .pipe(zip(unscopedName + '.zip'))
-    .pipe(dest(releaseDir));
-}
-
-/**
- * @deprecated
- * @returns {*}
- */
-export function packageLambdaRelease() {
-  return src(buildDir + '/**/*.*')
-    .pipe(zip(unscopedName + '.zip'))
-    .pipe(dest(releaseDir));
-}
-
-
+// Increment patch version
 export function incrementJsonPatch(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
-  if(semver.length = 3) {
+  if (semver.length === 3) {
     console.log('Old package version: ', packageJson.version);
-    let patchVersion = parseInt(semver[2],10) + 1;
+    let patchVersion = parseInt(semver[2], 10) + 1;
     packageJson.version = semver[0] + '.' + semver[1] + '.' + patchVersion;
     console.log('New package version: ' + packageJson.version);
     fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
@@ -308,56 +341,11 @@ export function incrementJsonPatch(cb) {
   cb();
 }
 
-
-
-
-
-function coreUpdate(packageName, cwd = './') {
-  return new Promise((resolve, reject) => {
-    const out = execSync('npm install ' + packageName + '@latest',{cwd: cwd}, {encoding: 'utf8'}).toString();
-    console.log(out);
-    resolve(true);
-  });
-}
-
-function executeCoreUpdates(dependencyList, cwd = './') {
-  let promises = [];
-  for (let dependency in dependencyList) {
-    if (dependency.startsWith('@franzzemen')) {
-      console.log('Executing core update on ' + dependency);
-      promises.push(coreUpdate(dependency, cwd));
-    }
-  }
-  return Promise.all(promises);
-}
-
-
-
-// Takes core @franzzemen libraries and forces them to update to latest
-function npmForceCoreLibraryUpdates(cb) {
-  try {
-    return new Promise(async (resolve, reject) => {
-      // Get @franzzemen dependencies
-      await executeCoreUpdates(packageJson.dependencies);
-      // Get @franzzemen dev dependencies
-      await executeCoreUpdates(packageJson.devDependencies);
-      resolve(true);
-      cb();
-    }).catch(err => {
-      console.log(err);
-      cb();
-    });
-    cb();
-  } catch (err) {
-    console.log(err);
-    cb();
-  }
-}
-
+// Increment minor version
 export function incrementJsonMinor(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
-  if (semver.length = 3) {
+  if (semver.length === 3) {
     console.log('Old package version: ', packageJson.version);
     let minorVersion = parseInt(semver[1], 10) + 1;
     packageJson.version = semver[0] + '.' + minorVersion + '.0';
@@ -367,10 +355,11 @@ export function incrementJsonMinor(cb) {
   cb();
 }
 
+// Increment major version
 export function incrementJsonMajor(cb) {
   let version = packageJson.version;
   const semver = version.split('.');
-  if (semver.length = 3) {
+  if (semver.length === 3) {
     console.log('Old package version: ', packageJson.version);
     let majorVersion = parseInt(semver[0], 10) + 1;
     packageJson.version = majorVersion + '.0.0';
@@ -380,42 +369,15 @@ export function incrementJsonMajor(cb) {
   cb();
 }
 
-export function npmInstallBuildDir(cb) {
-  exec('npm install --only=prod --no-package-lock', {cwd: buildDir}, (err, stdout, stderr) => {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
-}
-
-export function npmInstallLayerDir(cb) {
-  exec('npm install --only=prod --no-package-lock', {cwd: lambdaLayerDir}, (err, stdout, stderr) => {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
-}
-
+// Public
 export function publish(cb) {
-  console.log(`npm publish ./publish`);
-  const result = execSync('npm publish ./publish', {});
+  console.log(`npm publish ${publishDir}`);
+  const result = execSync(`npm publish ${publishDir}`, {});
   console.log(result.toString('utf-8'));
   console.log(`Setting npm post-publish delay of ${npmTimeout} millis`);
   setTimeout(() => {
     cb();
-  }, npmTimeout)
-  /*
-  exec('npm publish ./publish', {}, (err, stdout, stderr) => {
-    console.log(`Setting npm post-publish delay of ${npmTimeout} millis`);
-    setTimeout(() => {
-      console.log(stdout);
-      console.log(stderr);
-      cb(err);
-      cb();
-    }, npmTimeout)
-  });
-  
-   */
+  }, npmTimeout);
 }
 
 
@@ -432,6 +394,7 @@ export function cleanGitStatus(data) {
   return uncommittedFiles;
 }
 
+// Git
 function statusCode() {
   return new Promise((success, error) => {
     git.status({args: '--porcelain'}, (err, stdout) => {
@@ -440,7 +403,7 @@ function statusCode() {
   });
 }
 
-
+// Git
 export async function gitCheckIn(cb) {
   const args = minimist(process.argv.slice(2));
   if (args.m && args.m.trim().length > 0) {
@@ -449,8 +412,9 @@ export async function gitCheckIn(cb) {
       .pipe(git.add())
       .pipe(git.commit(args.m));
   } else return Promise.reject('No source comment');
-};
+}
 
+// Git
 export function gitAdd(cb) {
   statusCode()
     .then(files => {
@@ -461,14 +425,15 @@ export function gitAdd(cb) {
       setTimeout(() => {
         console.log('Awaiting ' + gitTimeout + 'ms.  Next line should be \"Finished \'gitAdd\'\" If Add activity continues beyond this limit adjust through gitbase.init');
         cb();
-      }, gitTimeout)
+      }, gitTimeout);
     })
     .catch(err => {
       console.log(err, err.stack);
       cb();
     });
-};
+}
 
+// Git
 export function gitCommit(cb) {
   const args = minimist(process.argv.slice(2));
   if (args.m && args.m.trim().length > 0) {
@@ -481,7 +446,7 @@ export function gitCommit(cb) {
         setTimeout(() => {
           console.log('Awaiting ' + gitTimeout + 'ms.  Next line should be \"Finished \'gitCommit\'\" If Add activity continues beyond this limit adjust through gitbase.init');
           cb();
-        }, gitTimeout)
+        }, gitTimeout);
       })
       .catch(err => {
         console.log(err, err.stack);
@@ -492,268 +457,48 @@ export function gitCommit(cb) {
     console.log(err, err.stack);
     throw err;
   }
-};
+}
 
+// GIt
 export function gitPush(cb) {
   console.log('Pushing to ' + mainBranch);
   git.push('origin', mainBranch, function (err) {
     if (err) throw err;
     cb();
   });
-};
-
-export function samClean(cb) {
-  let functions = fs.readdirSync('./functions');
-  functions.forEach(lambdaFunction => {
-    console.log('Deleted ' + deleteSync('./functions/' + lambdaFunction + '/release'));
-  });
-  functions.forEach(lambdaFunction => {
-    console.log('Deleted ' + deleteSync('./functions/' + lambdaFunction + '/testing'));
-  });
-  let layers = fs.readdirSync('./layers');
-  layers.forEach(layer => {
-    console.log('Deleted ' + deleteSync('./layers/' + layer + '/nodejs/node_modules'));
-  });
-  cb();
-}
-
-function _samNpmInstallFunctionRelease(lambdaFunction) {
-  return new Promise((resolve, reject) => {
-    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
-    console.log(execSync('npm install --only=prod --no-package-lock', {cwd: './functions/' + lambdaFunction + '/release'}, {encoding: 'utf'}).toString());
-    resolve(true);
-  });
-}
-
-function _samNpmForceUpdateFunction(lambdaFunction) {
-  let promises = [];
-  const functionPackageJson = JSON.parse(fs.readFileSync('./functions/' + lambdaFunction + '/package.json', {encoding: 'utf8'}).toString());
-  promises.push(executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction));
-  promises.push(executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction));
-  return Promise.all(promises);
-}
-
-function _samNpmForceUpdateLayer(layer) {
-  let promises = [];
-  const layerPackageJson = JSON.parse(fs.readFileSync('./layers/' + layer + '/nodejs/package.json', {encoding: 'utf8'}).toString());
-  promises.push(executeCoreUpdates(layerPackageJson.dependencies, './layers/' + layer + '/nodejs'));
-  promises.push(executeCoreUpdates(layerPackageJson.devDependencies, './layers/' + layer + '/nodejs'));
-  return Promise.all(promises);
-}
-
-async function _samNpmForceUpdateFunctionProject(functions) {
-  let promises = [];
-  functions.forEach( (lambdaFunction) => {
-    promises.push(_samNpmForceUpdateFunction(lambdaFunction));
-  });
-  return Promise.all(promises);
-}
-
-async function _samNpmForceUpdateLayerProject(layers) {
-  let promises = [];
-  layers.forEach( (layer) => {
-    promises.push(_samNpmForceUpdateLayer(layer));
-  });
-  return Promise.all(promises);
 }
 
 
-export async function samNpmForceUpdateFunctionsProject(cb) {
-  let functions = fs.readdirSync('./functions');
-  await _samNpmForceUpdateFunctionProject(functions);
-  cb();
-}
-
-export async function samNpmForceUpdateLayersProject(cb) {
-  let layers = fs.readdirSync('./layers');
-  await _samNpmForceUpdateLayerProject(layers);
-  cb();
-}
-
-
-function _samInstallFunctionsReleases(functions) {
-  let npmPromises = [];
-  functions.forEach( (lambdaFunction) => {
-    npmPromises.push(_samNpmInstallFunctionRelease(lambdaFunction));
-  });
-  return Promise.all(npmPromises);
-}
-
-//function transpileTypescriptToBuildDir() {
-//  const tsProject = ts.createProject('tsconfig.src.json');
-//  return src(tsSrcDir + '/**/*.ts')
-//    .pipe(sourcemaps.init())
-//    .pipe(tsProject())
-//    .pipe(sourcemaps.write())
-//    .pipe(dest(buildDir));
-//}
-
-export function samTranspileFunctionsTypescriptToReleases(cb) {
-  let functions = fs.readdirSync('./functions');
-  let merged, last;
-  functions.forEach((lambdaFunction) => {
-    let tsProject = ts.createProject('tsconfig.src.json');
-    let thisStream = src('./functions/' + lambdaFunction + '/ts-src/**/*.ts')
-//      .pipe(sourcemaps.init())
-      .pipe(tsProject())
-//      .pipe(sourcemaps.write())
-      .pipe(dest('./functions/' + lambdaFunction + '/release'));
-    if(merged) {
-      merged.add(thisStream);
-    } else if (last) {
-      merged = merge(last, thisStream);
-    } else {
-      last = thisStream;
-    }
-  });
-  if(merged) {
-    return merged;
-  } else if (last) {
-    return last;
-  } else {
-    cb();
+export function runCommonJSTests() {
+  if (generateCommonJS) {
+    return src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
+      .pipe(mocha({timeout: mochaTimeout}));
   }
 }
 
-export function samTranspileFunctionsTestTypescriptToTesting(cb) {
-  let functions = fs.readdirSync('./functions');
-  let merged, last;
-  functions.forEach((lambdaFunction) => {
-    let tsProject = ts.createProject('tsconfig.src.json');
-    let thisStream = src('./functions/' + lambdaFunction + '/ts-test/**/*.ts')
-      //      .pipe(sourcemaps.init())
-      .pipe(tsProject())
-      //      .pipe(sourcemaps.write())
-      .pipe(dest('./functions/' + lambdaFunction + '/testing'));
-    if(merged) {
-      merged.add(thisStream);
-    } else if (last) {
-      merged = merge(last, thisStream);
-    } else {
-      last = thisStream;
-    }
-  });
-  if(merged) {
-    return merged;
-  } else if (last) {
-    return last;
-  } else {
-    cb();
-  }
-}
-
-export function samCreateFunctionsReleases(cb) {
-  let functions = fs.readdirSync('./functions');
-  let merged, last;
-  functions.forEach((lambdaFunction) => {
-    let thisStream = src(
-      [
-        './functions/' + lambdaFunction + '/src/**/*.js',
-        './functions/' + lambdaFunction + '/src/**/*.json',
-        './functions/' + lambdaFunction + '/src/**/*.pem',
-        './functions/' + lambdaFunction + '/package.json',
-        './functions/' + lambdaFunction + '/src/**/*.crt'])
-      .pipe(debug())
-      .pipe(dest('./functions/' + lambdaFunction + '/release'));
-    if(merged) {
-      merged.add(thisStream);
-    } else if (last) {
-      merged = merge(last, thisStream);
-    } else {
-      last = thisStream;
-    }
-  });
-  if(merged) {
-    return merged;
-  } else if (last) {
-    return last;
-  } else {
-    cb();
-  }
-}
-
-export function samCopyTestFiles(cb) {
-  let functions = fs.readdirSync('./functions');
-  let merged, last;
-  functions.forEach((lambdaFunction) => {
-    if(fs.existsSync('./functions/' + lambdaFunction + '/ts-test')) {
-      let thisStream = src(
-        [
-          './functions/' + lambdaFunction + '/ts-test/config.json',
-          './functions/' + lambdaFunction + '/ts-test/**/*.pem',
-        ])
-        .pipe(debug())
-        .pipe(dest('./functions/' + lambdaFunction + '/testing'));
-      if (merged) {
-        merged.add(thisStream);
-      } else if (last) {
-        merged = merge(last, thisStream);
-      } else {
-        last = thisStream;
-      }
-    }
-  });
-  if(merged) {
-    return merged;
-  } else if (last) {
-    return last;
-  } else {
-    cb();
-  }
-}
-
-export async function samInstallFunctionsReleases(cb) {
-  let functions = fs.readdirSync('./functions');
-  await _samInstallFunctionsReleases(functions);
-  cb();
-}
-
-function _samNpmInstallLayer(layer) {
-  return new Promise((resolve, reject) => {
-    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
-    execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'});
-    resolve(true);
-  });
-}
-
-export function samRefreshLayers(cb) {
-  let layers = fs.readdirSync('./layers');
-  layers.forEach(async (layer) => {
-    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
-    execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'});
-  });
-  cb();
-}
-
-export function samBuild(cb) {
-  return new Promise((resolve, reject) => {
-    console.log('Executing \"sam build');
-    console.log(execSync('sam build',{cwd: './', encoding : 'utf8'}).toString());
-    resolve(true);
-  });
-}
-
-export function samDeploy(cb) {
-  return new Promise((resolve, reject) => {
-    console.log('Executing \"sam deploy');
-    console.log(execSync('sam deploy',{cwd: './', encoding : 'utf8'}).toString());
-    resolve(true);
-  });
-}
-
-
-
-export const npmForceUpdateProject = npmForceCoreLibraryUpdates;
-
-export const upgrade = gulp.series(
-  ncuu,
-  npmInstallProject
-);
-
-export function test ()  {
-  return src(['./testing/**/*.test.js', './testing/**/*.test.mjs', './testing/**/*.test.cjs'])
+export function runES6Test() {
+  return src([`${testingMjsDir}/**/*.test.js`, `${testingMjsDir}/**/*.test.mjs`, `${testingMjsDir}/**/*.test.cjs`])
     .pipe(mocha({timeout: mochaTimeout}));
 }
+
+export function runTests() {
+  if (generateCommonJS) {
+    runCommonJSTests();
+  }
+  return runES6Test();
+}
+
+export const testCommonJS = gulp.series(
+  runCommonJSTests
+);
+
+export const testES6 = gulp.series(
+  runES6Test
+);
+
+export const test = gulp.series(
+  runTests
+);
 
 export const buildTest = gulp.series(
   cleanTesting,
@@ -761,7 +506,7 @@ export const buildTest = gulp.series(
   copyJsonToTestingDir,
   tscTsTest,
   cleanTranspiledTest,
-  test
+  runTests
 );
 
 export default gulp.series(
@@ -781,8 +526,8 @@ export default gulp.series(
   copyBuildJsonToPublishDir,
   tscTsTest,// Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  copyPackageJsonToPublishDir,
-  test);
+  copyPackageJsonsToPublishDir,
+  runTests);
 
 export const clean = gulp.series(
   cleanUnwantedFiles,
@@ -808,9 +553,9 @@ export const patch = gulp.series(
   copyBuildJsonToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  test,
   incrementJsonPatch,
-  copyPackageJsonToPublishDir,
+  copyPackageJsonsToPublishDir,
+  runTests,
   publish,
   gitAdd,
   gitCommit,
@@ -833,9 +578,9 @@ export const minor = gulp.series(
   copyBuildJsToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  test,
   incrementJsonMinor,
-  copyPackageJsonToPublishDir,
+  copyPackageJsonsToPublishDir,
+  runTests,
   publish,
   gitAdd,
   gitCommit,
@@ -858,9 +603,9 @@ export const major = gulp.series(
   copyBuildJsonToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  test,
   incrementJsonMajor,
-  copyPackageJsonToPublishDir,
+  copyPackageJsonsToPublishDir,
+  runTests,
   publish,
   gitAdd,
   gitCommit,

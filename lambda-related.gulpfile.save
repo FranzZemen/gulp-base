@@ -1,0 +1,381 @@
+/*
+Created by Franz Zemen 11/11/2022
+License Type: 
+*/
+
+// TODO: What is release?
+export function cleanRelease(cb) {
+  deleteSync(releaseDir);
+  cb();
+}
+ unscopedName = path.parse(packageJson.name).name;
+
+//  To be extracted to lambda gulp file
+
+import {exec, execSync} from 'child_process';
+import {deleteSync} from 'del';
+// Package name with the @franzzemen scope
+import fs from 'fs';
+
+let unscopedName = null;
+const lambdaLayerDir = buildDir + '/nodejs';
+// Copy secrets
+export function copySecretsToTestingDir() {
+  return src([jsTestDir + '/**/*.pem', tsTestDir + '/**/*.pem'])
+    .pipe(dest(testingDir));
+}
+
+/**
+ * @deprecated
+ * @param cb
+ */
+export function copyPackageJsonToLambdaLayerDir(cb) {
+  try {
+    fs.mkdirSync(buildDir);
+  }
+  catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  try {
+    fs.mkdirSync(lambdaLayerDir);
+  }
+  catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  fs.writeFileSync(lambdaLayerDir + '/package.json', JSON.stringify(packageJson, null, 2));
+  cb();
+}
+
+
+/**
+ * @deprecated
+ * @returns {*}
+ */
+export function packageLayerRelease() {
+  return src(buildDir + '/**/*.*')
+    .pipe(zip(unscopedName + '.zip'))
+    .pipe(dest(releaseDir));
+}
+
+/**
+ * @deprecated
+ * @returns {*}
+ */
+export function packageLambdaRelease() {
+  return src(buildDir + '/**/*.*')
+    .pipe(zip(unscopedName + '.zip'))
+    .pipe(dest(releaseDir));
+}
+
+
+
+function coreUpdate(packageName, cwd = './') {
+  return new Promise((resolve, reject) => {
+    const out = execSync('npm install ' + packageName + '@latest',{cwd: cwd}, {encoding: 'utf8'}).toString();
+    console.log(out);
+    resolve(true);
+  });
+}
+
+function executeCoreUpdates(dependencyList, cwd = './') {
+  let promises = [];
+  for (let dependency in dependencyList) {
+    if (dependency.startsWith('@franzzemen')) {
+      console.log('Executing core update on ' + dependency);
+      promises.push(coreUpdate(dependency, cwd));
+    }
+  }
+  return Promise.all(promises);
+}
+
+
+
+// Takes core @franzzemen libraries and forces them to update to latest
+function npmForceCoreLibraryUpdates(cb) {
+  try {
+    return new Promise(async (resolve, reject) => {
+      // Get @franzzemen dependencies
+      await executeCoreUpdates(packageJson.dependencies);
+      // Get @franzzemen dev dependencies
+      await executeCoreUpdates(packageJson.devDependencies);
+      resolve(true);
+      cb();
+    }).catch(err => {
+      console.log(err);
+      cb();
+    });
+    cb();
+  } catch (err) {
+    console.log(err);
+    cb();
+  }
+}
+
+export function npmInstallBuildDir(cb) {
+  exec('npm install --only=prod --no-package-lock', {cwd: buildDir}, (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+}
+
+export function npmInstallLayerDir(cb) {
+  exec('npm install --only=prod --no-package-lock', {cwd: lambdaLayerDir}, (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+}
+
+
+export function samClean(cb) {
+  let functions = fs.readdirSync('./functions');
+  functions.forEach(lambdaFunction => {
+    console.log('Deleted ' + deleteSync('./functions/' + lambdaFunction + '/release'));
+  });
+  functions.forEach(lambdaFunction => {
+    console.log('Deleted ' + deleteSync('./functions/' + lambdaFunction + '/testing'));
+  });
+  let layers = fs.readdirSync('./layers');
+  layers.forEach(layer => {
+    console.log('Deleted ' + deleteSync('./layers/' + layer + '/nodejs/node_modules'));
+  });
+  cb();
+}
+
+function _samNpmInstallFunctionRelease(lambdaFunction) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./functions/' + lambdaFunction + '/release');
+    console.log(execSync('npm install --only=prod --no-package-lock', {cwd: './functions/' + lambdaFunction + '/release'}, {encoding: 'utf'}).toString());
+    resolve(true);
+  });
+}
+
+function _samNpmForceUpdateFunction(lambdaFunction) {
+  let promises = [];
+  const functionPackageJson = JSON.parse(fs.readFileSync('./functions/' + lambdaFunction + '/package.json', {encoding: 'utf8'}).toString());
+  promises.push(executeCoreUpdates(functionPackageJson.dependencies, './functions/' + lambdaFunction));
+  promises.push(executeCoreUpdates(functionPackageJson.devDependencies, './functions/' + lambdaFunction));
+  return Promise.all(promises);
+}
+
+function _samNpmForceUpdateLayer(layer) {
+  let promises = [];
+  const layerPackageJson = JSON.parse(fs.readFileSync('./layers/' + layer + '/nodejs/package.json', {encoding: 'utf8'}).toString());
+  promises.push(executeCoreUpdates(layerPackageJson.dependencies, './layers/' + layer + '/nodejs'));
+  promises.push(executeCoreUpdates(layerPackageJson.devDependencies, './layers/' + layer + '/nodejs'));
+  return Promise.all(promises);
+}
+
+async function _samNpmForceUpdateFunctionProject(functions) {
+  let promises = [];
+  functions.forEach( (lambdaFunction) => {
+    promises.push(_samNpmForceUpdateFunction(lambdaFunction));
+  });
+  return Promise.all(promises);
+}
+
+async function _samNpmForceUpdateLayerProject(layers) {
+  let promises = [];
+  layers.forEach( (layer) => {
+    promises.push(_samNpmForceUpdateLayer(layer));
+  });
+  return Promise.all(promises);
+}
+
+
+export async function samNpmForceUpdateFunctionsProject(cb) {
+  let functions = fs.readdirSync('./functions');
+  await _samNpmForceUpdateFunctionProject(functions);
+  cb();
+}
+
+export async function samNpmForceUpdateLayersProject(cb) {
+  let layers = fs.readdirSync('./layers');
+  await _samNpmForceUpdateLayerProject(layers);
+  cb();
+}
+
+
+function _samInstallFunctionsReleases(functions) {
+  let npmPromises = [];
+  functions.forEach( (lambdaFunction) => {
+    npmPromises.push(_samNpmInstallFunctionRelease(lambdaFunction));
+  });
+  return Promise.all(npmPromises);
+}
+
+//function transpileTypescriptToBuildDir() {
+//  const tsProject = ts.createProject('tsconfig.ts-src.json');
+//  return src(tsSrcDir + '/**/*.ts')
+//    .pipe(sourcemaps.init())
+//    .pipe(tsProject())
+//    .pipe(sourcemaps.write())
+//    .pipe(dest(buildDir));
+//}
+
+export function samTranspileFunctionsTypescriptToReleases(cb) {
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    let tsProject = ts.createProject('tsconfig.ts-src.json');
+    let thisStream = src('./functions/' + lambdaFunction + '/ts-src/**/*.ts')
+      //      .pipe(sourcemaps.init())
+      .pipe(tsProject())
+      //      .pipe(sourcemaps.write())
+      .pipe(dest('./functions/' + lambdaFunction + '/release'));
+    if(merged) {
+      merged.add(thisStream);
+    } else if (last) {
+      merged = merge(last, thisStream);
+    } else {
+      last = thisStream;
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
+export function samTranspileFunctionsTestTypescriptToTesting(cb) {
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    let tsProject = ts.createProject('tsconfig.ts-src.json');
+    let thisStream = src('./functions/' + lambdaFunction + '/ts-test/**/*.ts')
+      //      .pipe(sourcemaps.init())
+      .pipe(tsProject())
+      //      .pipe(sourcemaps.write())
+      .pipe(dest('./functions/' + lambdaFunction + '/testing'));
+    if(merged) {
+      merged.add(thisStream);
+    } else if (last) {
+      merged = merge(last, thisStream);
+    } else {
+      last = thisStream;
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
+export function samCreateFunctionsReleases(cb) {
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    let thisStream = src(
+      [
+        './functions/' + lambdaFunction + '/src/**/*.js',
+        './functions/' + lambdaFunction + '/src/**/*.json',
+        './functions/' + lambdaFunction + '/src/**/*.pem',
+        './functions/' + lambdaFunction + '/package.json',
+        './functions/' + lambdaFunction + '/src/**/*.crt'])
+      .pipe(debug())
+      .pipe(dest('./functions/' + lambdaFunction + '/release'));
+    if(merged) {
+      merged.add(thisStream);
+    } else if (last) {
+      merged = merge(last, thisStream);
+    } else {
+      last = thisStream;
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
+export function samCopyTestFiles(cb) {
+  let functions = fs.readdirSync('./functions');
+  let merged, last;
+  functions.forEach((lambdaFunction) => {
+    if(fs.existsSync('./functions/' + lambdaFunction + '/ts-test')) {
+      let thisStream = src(
+        [
+          './functions/' + lambdaFunction + '/ts-test/config.json',
+          './functions/' + lambdaFunction + '/ts-test/**/*.pem',
+        ])
+        .pipe(debug())
+        .pipe(dest('./functions/' + lambdaFunction + '/testing'));
+      if (merged) {
+        merged.add(thisStream);
+      } else if (last) {
+        merged = merge(last, thisStream);
+      } else {
+        last = thisStream;
+      }
+    }
+  });
+  if(merged) {
+    return merged;
+  } else if (last) {
+    return last;
+  } else {
+    cb();
+  }
+}
+
+export async function samInstallFunctionsReleases(cb) {
+  let functions = fs.readdirSync('./functions');
+  await _samInstallFunctionsReleases(functions);
+  cb();
+}
+
+function _samNpmInstallLayer(layer) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
+    execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'});
+    resolve(true);
+  });
+}
+
+export function samRefreshLayers(cb) {
+  let layers = fs.readdirSync('./layers');
+  layers.forEach(async (layer) => {
+    console.log('Executing \"npm install --only=prod --no-package-lock\" in ./layers/' +layer + '/nodejs');
+    execSync('npm install --only=prod --no-package-lock',{cwd: './layers/' + layer + '/nodejs'});
+  });
+  cb();
+}
+
+export function samBuild(cb) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"sam build');
+    console.log(execSync('sam build',{cwd: './', encoding : 'utf8'}).toString());
+    resolve(true);
+  });
+}
+
+export function samDeploy(cb) {
+  return new Promise((resolve, reject) => {
+    console.log('Executing \"sam deploy');
+    console.log(execSync('sam deploy',{cwd: './', encoding : 'utf8'}).toString());
+    resolve(true);
+  });
+}
+
+
+
+export const npmForceUpdateProject = npmForceCoreLibraryUpdates;
+
+export const upgrade = gulp.series(
+  ncuu,
+  npmInstallProject
+);
