@@ -61,9 +61,8 @@ export function copyPackageJsonToPublishDir(cb) {
     }
   }
 
-  delete packageJson.type;
   const publishPackageJSon = _.merge({}, packageJson);
-  publishPackageJSon.main = 'Gulpfile.js';
+  publishPackageJSon.main = 'Gulpbase.js';
   
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJSon, null, 2));
   cb();
