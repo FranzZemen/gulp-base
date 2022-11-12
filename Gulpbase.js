@@ -391,8 +391,9 @@ export function copyPackageJsonsToPublishDir(cb) {
   if (generateCommonJS) {
     cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
   }
+  let mjsPackageJson;
   if(generateES) {
-    const mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
+     mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
   }
   
   // Write the dist package.json as well as the publish one
