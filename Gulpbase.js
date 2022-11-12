@@ -557,9 +557,9 @@ export default gulp.series(
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
   copyBuildJsonToPublishDir,
+  copyPackageJsonsToPublishDir,
   tscTsTest,// Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  copyPackageJsonsToPublishDir,
   runTests);
 
 export const clean = gulp.series(
@@ -584,10 +584,10 @@ export const patch = gulp.series(
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
   copyBuildJsonToPublishDir,
+  copyPackageJsonsToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonPatch,
-  copyPackageJsonsToPublishDir,
   runTests,
   publish,
   gitAdd,
@@ -609,10 +609,10 @@ export const minor = gulp.series(
   copyJsonToTestingDir,
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
+  copyPackageJsonsToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonMinor,
-  copyPackageJsonsToPublishDir,
   runTests,
   publish,
   gitAdd,
@@ -634,10 +634,10 @@ export const major = gulp.series(
   copyBuildTypescriptDeclarationToPublishDir,
   copyBuildJsToPublishDir,
   copyBuildJsonToPublishDir,
+  copyPackageJsonsToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonMajor,
-  copyPackageJsonsToPublishDir,
   runTests,
   publish,
   gitAdd,
