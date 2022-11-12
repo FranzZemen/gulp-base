@@ -70,7 +70,7 @@ export const patch = series(
   gulpBase.incrementJsonPatch,
   gulpBase.copyPackageJsonsToPublishDir,
   gulpBase.publish,
-  gulpBase.cleanPublish,
+ // gulpBase.cleanPublish,
   gulpBase.gitAdd,
   gulpBase.gitCommit,
   gulpBase.gitPush);
@@ -82,7 +82,7 @@ export const minor = series(
   gulpBase.incrementJsonMinor,
   gulpBase.copyPackageJsonsToPublishDir,
   gulpBase.publish,
-  gulpBase.cleanPublish,
+//  gulpBase.cleanPublish,
   gulpBase.gitAdd,
   gulpBase.gitCommit,
   gulpBase.gitPush);
@@ -93,7 +93,7 @@ export const major = series(
   gulpBase.incrementJsonMajor,
   gulpBase.copyPackageJsonsToPublishDir,
   gulpBase.publish,
-  gulpBase.cleanPublish,
+//  gulpBase.cleanPublish,
   gulpBase.gitAdd,
   gulpBase.gitCommit,
   gulpBase.gitPush);
