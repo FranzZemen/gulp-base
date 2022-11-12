@@ -362,13 +362,14 @@ export function copyPackageJsonsToPublishDir(cb) {
     }
   }
   
+  const baseJson = _.merge({}, packageJson);
   // Remote the type for publishing
-  delete packageJson.type;
+  delete baseJson.type;
   // Remove some top level properties, which would have the wrong paths for publishing
-  delete packageJson.main;
-  delete packageJson.module;
-  delete packageJson.types;
-  delete packageJson.exports;
+  delete baseJson.main;
+  delete baseJson.module;
+  delete baseJson.types;
+  delete baseJson.exports;
   
 
   const publishSpec = {
@@ -383,9 +384,9 @@ export function copyPackageJsonsToPublishDir(cb) {
     }
   }
 
-  const packageDistJson = _.merge({}, packageJson);
+  const packageDistJson = _.merge({}, baseJson);
   
-  const publishPackageJson = _.merge({}, packageJson, publishSpec);
+  const publishPackageJson = _.merge({}, baseJson, publishSpec);
   let cjsPackageJson;
   if (generateCommonJS) {
     cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
