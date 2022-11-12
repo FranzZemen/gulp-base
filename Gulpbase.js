@@ -198,18 +198,12 @@ export function cleanTranspiledSrc(cb) {
 export function cleanTranspiledTest(cb) {
   if (cleanCjsTranspilation) {
     if (generateCommonJS) {
-      src([testingCjsDir + '/**/*.cjs'])
+      return src([testingCjsDir + '/**/*.cjs'])
         .pipe(replace(/export\s*{};/g, ''))
         .pipe(dest(testingCjsDir));
     }
-    if(generateES) {
-      return src([testingMjsDir + '/**/*.cjs'])
-        .pipe(replace(/export\s*{};/g, ''))
-        .pipe(dest(testingMjsDir));
-    }
-  } else {
-    cb();
   }
+  cb();
 }
 
 // Copy Javascript and any standalone type definitions to build
