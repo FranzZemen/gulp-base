@@ -1,8 +1,17 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "16.4.5",
+  "version": "16.4.6",
   "description": "Common Gulp base",
   "type": "module",
+  "main": "publish/dist/cjs/index.js",
+  "module": "publish/dist/mjs/index.js",
+  "types": "publish/dist/mjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./publish/dist/mjs/index.js",
+      "require": "./publish/dist/cjs/index.js"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

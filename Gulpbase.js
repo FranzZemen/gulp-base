@@ -332,7 +332,14 @@ export function copyPackageJsonsToPublishDir(cb) {
     }
   }
   
+  // Remote the type for publishing
   delete packageJson.type;
+  // Remove some top level properties, which would have the wrong paths for publishing
+  delete packageJson.main;
+  delete packageJson.module;
+  delete packageJson.types;
+  delete packageJson.exports;
+  
 
   const publishSpec = {
     main: 'dist/cjs/index.js',
@@ -345,7 +352,7 @@ export function copyPackageJsonsToPublishDir(cb) {
       }
     }
   }
-  delete packageJson.type;
+
   const packageDistJson = _.merge({}, packageJson);
   
   const publishPackageJson = _.merge({}, packageJson, publishSpec);
