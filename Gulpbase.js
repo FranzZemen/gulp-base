@@ -23,6 +23,7 @@ const requireModule = createRequire(import.meta.url);
 const loadJSON = requireModule;
 
 let generateCommonJS = true;
+let generateES = true;
 // When transpiling Cjs files, an export {} appears at the end.  Lots of threads on this.  For us, we just clean it out.
 // However, we shouldn't be transpiling to .cjs with our bi-loader build (commonjs and cjs)
 let cleanCjsTranspilation = true;
@@ -81,6 +82,9 @@ const unwantedFiles = [
 // Setters
 export const setGenerateCommonJS = function (flag) {
   generateCommonJS = flag;
+};
+export const setGenerateES = function (flag) {
+  generateES = flag;
 };
 export const setCleanTranspiled = function (flag) {
   cleanCjsTranspilation = flag;
@@ -151,9 +155,11 @@ export function tscTsSrc(cb) {
       console.log(result);
     }
   }
-  result = execSync('tsc --project ' + tsConfigBuildMjsFileName, {cwd: './', stdio: 'inherit'});
-  if (result) {
-    console.log(result);
+  if(generateES) {
+    result = execSync('tsc --project ' + tsConfigBuildMjsFileName, {cwd: './', stdio: 'inherit'});
+    if (result) {
+      console.log(result);
+    }
   }
   cb();
 }
@@ -167,9 +173,11 @@ export function tscTsTest(cb) {
       console.log(result);
     }
   }
-  result = execSync('tsc --project ' + tsConfigBuildTestMjsFileName, {cwd: './', stdio: 'inherit'});
-  if (result) {
-    console.log(result);
+  if(generateES) {
+    result = execSync('tsc --project ' + tsConfigBuildTestMjsFileName, {cwd: './', stdio: 'inherit'});
+    if (result) {
+      console.log(result);
+    }
   }
   cb();
 }
@@ -182,9 +190,11 @@ export function cleanTranspiledSrc(cb) {
         .pipe(replace(/export\s*{};/g, ''))
         .pipe(dest(buildCjsDir));
     }
-    return src([buildMjsDir + '/**/*.cjs'])
-      .pipe(replace(/export\s*{};/g, ''))
-      .pipe(dest(buildMjsDir));
+    if(generateES) {
+      return src([buildMjsDir + '/**/*.cjs'])
+        .pipe(replace(/export\s*{};/g, ''))
+        .pipe(dest(buildMjsDir));
+    }
   } else {
     cb();
   }
@@ -198,42 +208,53 @@ export function cleanTranspiledTest(cb) {
         .pipe(replace(/export\s*{};/g, ''))
         .pipe(dest(testingCjsDir));
     }
-    return src([testingMjsDir + '/**/*.cjs'])
-      .pipe(replace(/export\s*{};/g, ''))
-      .pipe(dest(testingMjsDir));
+    if(generateES) {
+      return src([testingMjsDir + '/**/*.cjs'])
+        .pipe(replace(/export\s*{};/g, ''))
+        .pipe(dest(testingMjsDir));
+    }
   } else {
     cb();
   }
 }
 
 // Copy Javascript and any standalone type definitions to build
-export function copySrcJsToBuildDir() {
+export function copySrcJsToBuildDir(cb) {
   if (generateCommonJS) {
     src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildCjsDir));
   }
-  return src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
-    .pipe(dest(buildMjsDir));
+  if(generateES) {
+    return src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
+      .pipe(dest(buildMjsDir));
+  }
+  cb();
 }
 
 // Copy Javascript tests to testing
-export function copyTestJsToTestingDir() {
+export function copyTestJsToTestingDir(cb) {
   if (generateCommonJS) {
     src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
       .pipe(dest(testingCjsDir));
   }
-  return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
-    .pipe(dest(testingMjsDir));
+  if(generateES) {
+    return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+      .pipe(dest(testingMjsDir));
+  }
+  cb();
 }
 
 // Copy supporting JSON to build directories
-export function copyJsonToBuildDir() {
+export function copyJsonToBuildDir(cb) {
   if (generateCommonJS) {
     src([tsSrcDir + '/**/*.json'])
       .pipe(dest(buildCjsDir));
   }
-  return src([tsSrcDir + '/**/*.json'])
-    .pipe(dest(buildMjsDir));
+  if(generateES) {
+    return src([tsSrcDir + '/**/*.json'])
+      .pipe(dest(buildMjsDir));
+  }
+  cb();
 }
 
 // Copy JSON supporting tests
@@ -242,28 +263,37 @@ export function copyJsonToTestingDir(cb) {
     src([tsTestDir + '/**/*.json'])
       .pipe(dest(testingCjsDir));
   }
-  return src([tsTestDir + '/**/*.json'])
-    .pipe(dest(testingMjsDir));
+  if(generateES) {
+    return src([tsTestDir + '/**/*.json'])
+      .pipe(dest(testingMjsDir));
+  }
+  cb();
 }
 
 // Copy JSON to distributions
-export function copyBuildJsonToPublishDir() {
+export function copyBuildJsonToPublishDir(cb) {
   if (generateCommonJS) {
     src([buildCjsDir + '/**/*.json'])
       .pipe(dest(cjsDistDir));
   }
-  return src([buildMjsDir + '/**/*.json'])
-    .pipe(dest(mjsDistDir));
+  if(generateES) {
+    return src([buildMjsDir + '/**/*.json'])
+      .pipe(dest(mjsDistDir));
+  }
+  cb();
 }
 
 // Copy wikis
-export function copySrcMdToPublishDir() {
+export function copySrcMdToPublishDir(cb) {
   if (generateCommonJS) {
     src([tsSrcDir + '/**/*.md', './*.md'])
       .pipe(dest(cjsDistDir));
   }
-  return src([tsSrcDir + '/**/*.md', './*.md'])
-    .pipe(dest(mjsDistDir));
+  if(generateES) {
+    return src([tsSrcDir + '/**/*.md', './*.md'])
+      .pipe(dest(mjsDistDir));
+  }
+  cb();
 }
 
 // DELETE
@@ -274,23 +304,29 @@ export function copySrcMdToPublishDir() {
 
 
 // Copy all Javascript to publish distributions
-export function copyBuildJsToPublishDir() {
+export function copyBuildJsToPublishDir(cb) {
   if (generateCommonJS) {
     src([buildCjsDir + '/**/*.js', buildCjsDir + '/**/*.cjs', buildCjsDir + '/**/*.mjs'])
       .pipe(dest(cjsDistDir));
   }
-  return src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
-    .pipe(dest(mjsDistDir));
+  if(generateES) {
+    return src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
+      .pipe(dest(mjsDistDir));
+  }
+  cb();
 }
 
 // Copy type declarations
-export function copyBuildTypescriptDeclarationToPublishDir() {
+export function copyBuildTypescriptDeclarationToPublishDir(cb) {
   if (generateCommonJS) {
     src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
       .pipe(dest(cjsDistDir));
   }
-  return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
-    .pipe(dest(mjsDistDir));
+  if(generateES) {
+    return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
+      .pipe(dest(mjsDistDir));
+  }
+  cb();
 }
 
 // Copy the package JSON file to the distribution folders
@@ -319,11 +355,13 @@ export function copyPackageJsonsToPublishDir(cb) {
       }
     }
   }
-  try {
-    fs.mkdirSync(mjsDistDir);
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      cb(error);
+  if(generateES) {
+    try {
+      fs.mkdirSync(mjsDistDir);
+    } catch (error) {
+      if (error.code !== 'EEXIST') {
+        cb(error);
+      }
     }
   }
   if (generateCommonJS) {
@@ -364,7 +402,9 @@ export function copyPackageJsonsToPublishDir(cb) {
   if (generateCommonJS) {
     cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
   }
-  const mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
+  if(generateES) {
+    const mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
+  }
   
   // Write the dist package.json as well as the publish one
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJson, null, 2));
@@ -372,7 +412,9 @@ export function copyPackageJsonsToPublishDir(cb) {
     fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
     fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
   }
-  fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
+  if(generateES) {
+    fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
+  }
   cb();
 }
 
