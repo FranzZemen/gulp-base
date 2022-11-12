@@ -35,16 +35,16 @@ let npmTimeout = null;
 
 // ts-config file for commonjs processing.  We do NOT use .cts files and .mts files
 let tsConfigBuildCjsFileName = './tsconfig.build-cjs.json';
-let tsConfigBuildCjs = loadJSON(tsConfigBuildCjsFileName);
+let tsConfigBuildCjs;
 // ts-config file for es processing.  We do NOT use .cts and .mts files.
 let tsConfigBuildMjsFileName = './tsconfig.build-mjs.json';
-let tsConfigBuildMjs = loadJSON(tsConfigBuildMjsFileName);
+let tsConfigBuildMjs;
 // ts-config file for commonjs processing.
 let tsConfigBuildTestCjsFileName = './tsconfig.build-test-cjs.json';
-let tsConfigBuildTestCjs = loadJSON(tsConfigBuildTestCjsFileName);
+let tsConfigBuildTestCjs;
 // ts-config file for es processing
 let tsConfigBuildTestMjsFileName = './tsconfig.build-test-mjs.json';
-let tsConfigBuildTestMjs = loadJSON(tsConfigBuildTestMjsFileName);
+let tsConfigBuildTestMjs;
 
 // The main branch
 export let mainBranch = 'master'; // TODO: Do this once and for all!
