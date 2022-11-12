@@ -324,6 +324,13 @@ export function copyPackageJsonsToPublishDir(cb) {
       cb(error);
     }
   }
+  try {
+    fs.mkdirSync(testingCjsDir);
+  } catch (error) {
+    if (error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
   
   delete packageJson.type;
 
