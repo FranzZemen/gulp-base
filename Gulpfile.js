@@ -1,9 +1,11 @@
 import {deleteSync} from 'del';
+import fs from 'fs';
 import gulp from 'gulp';
+import _ from 'lodash';
 import {createRequire} from 'module';
 import {simpleGit} from 'simple-git';
 import * as gulpBase from './Gulpbase.js';
-import {cjsDistDir, mjsDistDir, publishDir} from './Gulpbase.js';
+import {cjsDistDir, cleanBuild, cleanTesting, mjsDistDir, publishDir, testingCjsDir} from './Gulpbase.js';
 import _default from './Gulpbase.js'
 
 export const exp = 1;
@@ -13,7 +15,8 @@ const dest = gulp.dest;
 const series = gulp.series;
 
 const requireModule = createRequire(import.meta.url);
-gulpBase.init(requireModule('./package.json'), requireModule('./package.dist.json'), 100, 'master');
+let packageJson = requireModule('./package.json');
+gulpBase.init(packageJson, requireModule('./package.dist.json'), 100, 'master');
 gulpBase.setCleanTranspiled(true);
 
 const git = simpleGit({
@@ -46,6 +49,28 @@ function cleanPublishExtras(cb) {
   deleteSync(`${cjsDistDir}/clean-export*.*`);
   cb();
 }
+
+export function copyPackageJsonToPublishDir(cb) {
+  try {
+    fs.mkdirSync(publishDir);
+  } catch (error) {
+    if(error.code !== 'EEXIST') {
+      cb(error);
+    }
+  }
+  delete packageJson.exports;
+  delete packageJson.types;
+  delete packageJson.module;
+  delete packageJson.main
+  const publishPackageJSon = _.merge({}, packageJson, {type: 'module'});
+  
+  // Write the dist package.json as well as the publish one
+  fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJSon, null, 2));
+  cb();
+}
+
+
+// The default is to build the dummy stuff as any other module
 export default  _default;
 /*
 export default series(
@@ -62,13 +87,16 @@ export default series(
 
 export const test = gulpBase.test;
 export const cleanPublish = gulpBase.cleanPublish;
-export const clean = gulpBase.clean;
+
+// The real build is different than other modules
 
 export const patch = series(
   gulpBase.cleanPublish,
+  gulpBase.cleanBuild,
+  gulpBase.cleanTesting,
   copyGulpBaseToPublishDir,
   gulpBase.incrementJsonPatch,
-  gulpBase.copyPackageJsonsToPublishDir,
+  copyPackageJsonToPublishDir,
   gulpBase.publish,
  // gulpBase.cleanPublish,
   gulpBase.gitAdd,
@@ -78,9 +106,11 @@ export const patch = series(
 
 export const minor = series(
   gulpBase.cleanPublish,
+  gulpBase.cleanBuild,
+  gulpBase.cleanTesting,
   copyGulpBaseToPublishDir,
   gulpBase.incrementJsonMinor,
-  gulpBase.copyPackageJsonsToPublishDir,
+  copyPackageJsonToPublishDir,
   gulpBase.publish,
 //  gulpBase.cleanPublish,
   gulpBase.gitAdd,
@@ -89,9 +119,11 @@ export const minor = series(
 
 export const major = series(
   gulpBase.cleanPublish,
+  gulpBase.cleanBuild,
+  gulpBase.cleanTesting,
   copyGulpBaseToPublishDir,
   gulpBase.incrementJsonMajor,
-  gulpBase.copyPackageJsonsToPublishDir,
+  copyPackageJsonToPublishDir,
   gulpBase.publish,
 //  gulpBase.cleanPublish,
   gulpBase.gitAdd,
