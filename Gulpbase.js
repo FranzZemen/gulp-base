@@ -310,11 +310,13 @@ export function copyPackageJsonsToPublishDir(cb) {
       cb(error);
     }
   }
-  try {
-    fs.mkdirSync(cjsDistDir);
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      cb(error);
+  if (generateCommonJS) {
+    try {
+      fs.mkdirSync(cjsDistDir);
+    } catch (error) {
+      if (error.code !== 'EEXIST') {
+        cb(error);
+      }
     }
   }
   try {
@@ -324,11 +326,13 @@ export function copyPackageJsonsToPublishDir(cb) {
       cb(error);
     }
   }
-  try {
-    fs.mkdirSync(testingCjsDir);
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      cb(error);
+  if (generateCommonJS) {
+    try {
+      fs.mkdirSync(testingCjsDir);
+    } catch (error) {
+      if (error.code !== 'EEXIST') {
+        cb(error);
+      }
     }
   }
   
