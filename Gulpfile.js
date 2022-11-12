@@ -60,6 +60,11 @@ export function copyPackageJsonToPublishDir(cb) {
       cb(error);
     }
   }
+  // Remove some top level properties, which would have the wrong paths for publishing
+  delete packageJson.main;
+  delete packageJson.module;
+  delete packageJson.types;
+  delete packageJson.exports;
 
   const publishPackageJSon = _.merge({}, packageJson);
   publishPackageJSon.main = 'Gulpbase.js';
