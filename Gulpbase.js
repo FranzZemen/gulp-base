@@ -564,7 +564,9 @@ export function runTests() {
   if (generateCommonJS) {
     runCommonJSTests();
   }
-  return runES6Test();
+  if(generateES) {
+    return runES6Test();
+  }
 }
 
 export const testCommonJS = gulp.series(
