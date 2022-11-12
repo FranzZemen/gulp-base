@@ -356,14 +356,19 @@ export function copyPackageJsonsToPublishDir(cb) {
   const packageDistJson = _.merge({}, packageJson);
   
   const publishPackageJson = _.merge({}, packageJson, publishSpec);
-  const cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
+  let cjsPackageJson;
+  if (generateCommonJS) {
+    cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
+  }
   const mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
   
   // Write the dist package.json as well as the publish one
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJson, null, 2));
-  fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
+  if (generateCommonJS) {
+    fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
+    fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
+  }
   fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
-  fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
   cb();
 }
 
