@@ -1,4 +1,5 @@
 import {deleteSync} from 'del';
+import {cwd} from 'node:process';
 import fs from 'fs';
 import gulp from 'gulp';
 import _ from 'lodash';
@@ -8,6 +9,7 @@ import * as gulpBase from './Gulpbase.js';
 import {cjsDistDir, cleanBuild, cleanTesting, mjsDistDir, publishDir, testingCjsDir} from './Gulpbase.js';
 import _default from './Gulpbase.js'
 
+
 export const exp = 1;
 
 const src = gulp.src;
@@ -16,7 +18,7 @@ const series = gulp.series;
 
 const requireModule = createRequire(import.meta.url);
 let packageJson = requireModule('./package.json');
-gulpBase.init(packageJson, requireModule('./package.dist.json'), 100, 'master');
+gulpBase.init(packageJson, cwd(), 100, 'master');
 gulpBase.setCleanTranspiled(true);
 
 const git = simpleGit({
@@ -58,13 +60,11 @@ export function copyPackageJsonToPublishDir(cb) {
       cb(error);
     }
   }
-  delete packageJson.exports;
-  delete packageJson.types;
-  delete packageJson.module;
-  delete packageJson.main
-  const publishPackageJSon = _.merge({}, packageJson, {type: 'module'});
+
+  delete packageJson.type;
+  const publishPackageJSon = _.merge({}, packageJson);
+  publishPackageJSon.main = 'Gulpfile.js';
   
-  // Write the dist package.json as well as the publish one
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJSon, null, 2));
   cb();
 }

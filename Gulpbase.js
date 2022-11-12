@@ -1,4 +1,5 @@
 import {execSync} from 'child_process';
+import {join} from 'path';
 import {deleteSync} from 'del';
 import * as fs from 'fs';
 import gulp from 'gulp';
@@ -8,6 +9,7 @@ import {default as replace} from 'gulp-replace';
 import _ from 'lodash';
 import minimist from 'minimist';
 import {createRequire} from 'module';
+
 import {inspect} from 'node:util';
 import * as path from 'path';
 
@@ -26,8 +28,6 @@ let generateCommonJS = true;
 let cleanCjsTranspilation = true;
 // The top level package.json as an object
 let packageJson = null;
-// The base json for distributions
-let packageDistJSon = null;
 // Timeout for git
 let gitTimeout = null;
 // We want to wait after an NPM publish to support npmu as (especially on Sundays) npm is slow to make freshly published packages visible
@@ -49,7 +49,8 @@ let tsConfigBuildTestMjs = loadJSON(tsConfigBuildTestMjsFileName);
 // The main branch
 export let mainBranch = 'master'; // TODO: Do this once and for all!
 
-// Source folders
+// Source folder
+export let cwd = null;
 // Source for typescript and javascript.  Javascript extensions should be .cjs or .mjs or one of the distributions won't work!
 export let tsSrcDir = './ts-src';
 // Source for typescript tests and/or javascript tests. Javascript extensions should be .cjs or .mjs or one of the distributions won't work!
@@ -99,13 +100,22 @@ export const setNpmTimeout = function (_timeout) {
   npmTimeout = _timeout;
 };
 
+export const setCwd = function(_cwd) {
+  cwd = _cwd;
+}
+
 // Init for package json and files
-export function init(_packageJson, _packageDistJson,  _gitTimeout = 100, _npmTimeout = 5000, _mainBranch) {
+export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000, _mainBranch) {
   gitTimeout = _gitTimeout;
   npmTimeout = _npmTimeout;
   packageJson = _packageJson;
-  packageDistJSon = _packageDistJson;
   mainBranch = _mainBranch;
+  cwd = _cwd;
+  
+  tsConfigBuildCjs = loadJSON(tsConfigBuildCjsFileName);
+  tsConfigBuildMjs = loadJSON(join(cwd,tsConfigBuildMjsFileName));
+  tsConfigBuildTestCjs = loadJSON(join(cwd,tsConfigBuildTestCjsFileName));
+  tsConfigBuildTestMjs = loadJSON(join(cwd,tsConfigBuildTestMjsFileName));
 }
 
 // Tasks
@@ -282,45 +292,61 @@ export function copyBuildTypescriptDeclarationToPublishDir() {
   return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
     .pipe(dest(mjsDistDir));
 }
+
 // Copy the package JSON file to the distribution folders
 export function copyPackageJsonsToPublishDir(cb) {
   
   try {
     fs.mkdirSync(publishDir);
   } catch (error) {
-    if(error.code !== 'EEXIST') {
+    if (error.code !== 'EEXIST') {
       cb(error);
     }
   }
   try {
     fs.mkdirSync(`${publishDir}/dist`);
   } catch (error) {
-    if(error.code !== 'EEXIST') {
+    if (error.code !== 'EEXIST') {
       cb(error);
     }
   }
   try {
     fs.mkdirSync(cjsDistDir);
   } catch (error) {
-    if(error.code !== 'EEXIST') {
+    if (error.code !== 'EEXIST') {
       cb(error);
     }
   }
   try {
     fs.mkdirSync(mjsDistDir);
   } catch (error) {
-    if(error.code !== 'EEXIST') {
+    if (error.code !== 'EEXIST') {
       cb(error);
     }
   }
- 
-  delete packageJson.type;
   
-  const cjsPackageJson = _.merge({}, packageDistJSon, {type: 'commonjs'});
-  const mjsPackageJson = _.merge({}, packageDistJSon, {type: 'module'});
+  delete packageJson.type;
+
+  const publishSpec = {
+    main: 'dist/cjs/index.js',
+    module: 'dist/mjs/index.js',
+    types: 'dist/mjs/index.d.ts',
+    exports: {
+      '.': {
+        'import': './dist/mjs/index.js',
+        'require': './dist/cjs/index.js'
+      }
+    }
+  }
+  delete packageJson.type;
+  const packageDistJson = _.merge({}, packageJson);
+  
+  const publishPackageJson = _.merge({}, packageJson, publishSpec);
+  const cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
+  const mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
   
   // Write the dist package.json as well as the publish one
-  fs.writeFileSync(publishDir + '/package.json', JSON.stringify(packageJson, null, 2));
+  fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJson, null, 2));
   fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
   fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
   fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
