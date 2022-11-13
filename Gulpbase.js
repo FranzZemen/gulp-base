@@ -553,7 +553,7 @@ export function runCommonJSTests(cb) {
     packageJson.type = 'commonjs';
     fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
     
-    returnsrc([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
+    return src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
       .pipe(mocha({timeout: mochaTimeout}));
   }
   cb();

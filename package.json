@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "16.4.22",
+  "version": "16.4.23",
   "description": "Common Gulp base",
   "type": "module",
   "main": "publish/dist/cjs/index.js",
