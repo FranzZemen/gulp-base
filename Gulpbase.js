@@ -548,6 +548,7 @@ export function gitPush(cb) {
 
 
 export function runCommonJSTests(cb) {
+  console.log('Running CommonJS tests...')
   if (generateCommonJS) {
     // Need to change the type on the root package.json to commonjs for the tests
     packageJson.type = 'commonjs';
@@ -560,6 +561,7 @@ export function runCommonJSTests(cb) {
 }
 
 export function runES6Test(cb) {
+  console.log('Running ES tests...')
   // Ensure packageJSON is back to module
   packageJson.type = 'module';
   fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
