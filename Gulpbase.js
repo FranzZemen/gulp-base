@@ -20,23 +20,7 @@ export {npmUpdateProject} from './npm-commands.js';
 const requireModule = createRequire(import.meta.url);
 const loadJSON = requireModule;
 
-
-const gitOptions = {
-  baseDir: process.cwd(),
-  binary: 'git',
-  maxConcurrentProcesses: 6,
-  trimmed: false,
-};
-const git = simpleGit(gitOptions);
-
-const branches = await git.branchLocal();
-// The main branch, but will change to the current branch if it is not the main one
-export let gitBranch = 'main';
-
-if(branches && branches.current) {
-  gitBranch = branches.current;
-}
-
+/**********  Declarations **********/
 
 let generateCommonJS = true;
 let generateES = true;
@@ -119,7 +103,25 @@ export const setCwd = function (_cwd) {
   cwd = _cwd;
 };
 
-// Init for package json and files
+/********** Set gitBranch for push to origin **********/
+const gitOptions = {
+  baseDir: process.cwd(),
+  binary: 'git',
+  maxConcurrentProcesses: 6,
+  trimmed: false,
+};
+const git = simpleGit(gitOptions);
+
+const branches = await git.branchLocal();
+// The main branch, but will change to the current branch if it is not the main one
+export let gitBranch = 'main';
+
+if(branches && branches.current) {
+  gitBranch = branches.current;
+}
+
+/********** Initialization - must always be called **********/
+
 export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000) {
   gitTimeout = _gitTimeout;
   npmTimeout = _npmTimeout;
@@ -132,8 +134,7 @@ export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000) 
   tsConfigBuildTestMjs = loadJSON(join(cwd, tsConfigBuildTestMjsFileName));
 }
 
-
-
+/********** Cleaning Tasks **********/
 
 // Tasks
 export function cleanTesting(cb) {
@@ -153,11 +154,43 @@ export function cleanBuild(cb) {
   cb();
 }
 
-
 export function cleanPublish(cb) {
   deleteSync(publishDir);
   cb();
 }
+
+export function cleanAll(cb) {
+  cleanTesting(cb);
+  cleanPublish(cb);
+  cleanBuild(cb);
+  cb();
+}
+
+// Clean cjs files of the unwanted export {}
+export function cleanTranspiledSrc(cb) {
+  if (cleanCjsTranspilation) {
+    if (generateCommonJS) {
+      return src([buildCjsDir + '/**/*.cjs'])
+        .pipe(replace(/export\s*{};/g, ''))
+        .pipe(dest(buildCjsDir));
+    }
+  }
+  cb();
+}
+
+// Clean cjs files of the unwanted export {}
+export function cleanTranspiledTest(cb) {
+  if (cleanCjsTranspilation) {
+    if (generateCommonJS) {
+      return src([testingCjsDir + '/**/*.cjs'])
+        .pipe(replace(/export\s*{};/g, ''))
+        .pipe(dest(testingCjsDir));
+    }
+  }
+  cb();
+}
+
+/********** Transpilation **********/
 
 // Transpile source.  Project files should point to respective build folders.
 export function tscTsSrc(cb) {
@@ -195,29 +228,7 @@ export function tscTsTest(cb) {
   cb();
 }
 
-// Clean cjs files of the unwanted export {}
-export function cleanTranspiledSrc(cb) {
-  if (cleanCjsTranspilation) {
-    if (generateCommonJS) {
-      return src([buildCjsDir + '/**/*.cjs'])
-        .pipe(replace(/export\s*{};/g, ''))
-        .pipe(dest(buildCjsDir));
-    }
-  }
-  cb();
-}
-
-// Clean cjs files of the unwanted export {}
-export function cleanTranspiledTest(cb) {
-  if (cleanCjsTranspilation) {
-    if (generateCommonJS) {
-      return src([testingCjsDir + '/**/*.cjs'])
-        .pipe(replace(/export\s*{};/g, ''))
-        .pipe(dest(testingCjsDir));
-    }
-  }
-  cb();
-}
+/********** Move static (not transpiled/transformed files to build directories **********/
 
 // Copy Javascript and any standalone type definitions to build
 export function copySrcJsToBuildDir(cb) {
@@ -228,19 +239,6 @@ export function copySrcJsToBuildDir(cb) {
   if (generateES) {
     return src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildMjsDir));
-  }
-  cb();
-}
-
-// Copy Javascript tests to testing
-export function copyTestJsToTestingDir(cb) {
-  if (generateCommonJS) {
-    src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
-      .pipe(dest(testingCjsDir));
-  }
-  if (generateES) {
-    return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
-      .pipe(dest(testingMjsDir));
   }
   cb();
 }
@@ -258,6 +256,27 @@ export function copyJsonToBuildDir(cb) {
   cb();
 }
 
+export function copyStaticToBuildDir(cb) {
+  copySrcJsToBuildDir(cb);
+  copyJsonToBuildDir(cb);
+  cb();
+}
+
+/********** Move static (not transpiled/transformed files to test directories **********/
+
+// Copy Javascript tests to testing
+export function copyTestJsToTestingDir(cb) {
+  if (generateCommonJS) {
+    src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+      .pipe(dest(testingCjsDir));
+  }
+  if (generateES) {
+    return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+      .pipe(dest(testingMjsDir));
+  }
+  cb();
+}
+
 // Copy JSON supporting tests
 export function copyJsonToTestingDir(cb) {
   if (generateCommonJS) {
@@ -271,18 +290,13 @@ export function copyJsonToTestingDir(cb) {
   cb();
 }
 
-// Copy JSON to distributions
-export function copyBuildJsonToPublishDir(cb) {
-  if (generateCommonJS) {
-    src([buildCjsDir + '/**/*.json'])
-      .pipe(dest(cjsDistDir));
-  }
-  if (generateES) {
-    return src([buildMjsDir + '/**/*.json'])
-      .pipe(dest(mjsDistDir));
-  }
+export function copyStaticToTestingDir(cb) {
+  copyTestJsToTestingDir(cb);
+  copyJsonToTestingDir(cb);
   cb();
 }
+
+/********** Copy Static To Publish **********/
 
 // Copy wikis
 export function copySrcMdToPublishDir(cb) {
@@ -297,12 +311,18 @@ export function copySrcMdToPublishDir(cb) {
   cb();
 }
 
-// DELETE
-//export function copySrcJsToReleaseDir ()  {
-//  return src([jsSrcDir + '/**/*.js', jsSrcDir + '/**/*.mjs', jsSrcDir + '/**/*.cjs'])
-//    .pipe(dest(releaseDir));
-//};
-
+// Copy type declarations
+export function copyBuildTypescriptDeclarationToPublishDir(cb) {
+  if (generateCommonJS) {
+    src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
+      .pipe(dest(cjsDistDir));
+  }
+  if (generateES) {
+    return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
+      .pipe(dest(mjsDistDir));
+  }
+  cb();
+}
 
 // Copy all Javascript to publish distributions
 export function copyBuildJsToPublishDir(cb) {
@@ -317,14 +337,14 @@ export function copyBuildJsToPublishDir(cb) {
   cb();
 }
 
-// Copy type declarations
-export function copyBuildTypescriptDeclarationToPublishDir(cb) {
+// Copy JSON to distributions
+export function copyBuildJsonToPublishDir(cb) {
   if (generateCommonJS) {
-    src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
+    src([buildCjsDir + '/**/*.json'])
       .pipe(dest(cjsDistDir));
   }
   if (generateES) {
-    return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
+    return src([buildMjsDir + '/**/*.json'])
       .pipe(dest(mjsDistDir));
   }
   cb();
@@ -419,6 +439,19 @@ export function copyPackageJsonsToPublishDir(cb) {
   }
   cb();
 }
+
+export function copyStaticAndGeneratedToPublishDir(cb) {
+  copySrcMdToPublishDir(cb);
+  copyBuildTypescriptDeclarationToPublishDir(cb);
+  copyBuildJsToPublishDir(cb);
+  copyBuildJsonToPublishDir(cb);
+  copyPackageJsonsToPublishDir(cb);
+  cb();
+}
+
+
+
+
 
 // Increment patch version
 export function incrementJsonPatch(cb) {
@@ -596,8 +629,7 @@ export const test = gulp.series(
 
 export const buildTest = gulp.series(
   cleanTesting,
-  copyTestJsToTestingDir,
-  copyJsonToTestingDir,
+  copyStaticToTestingDir,
   tscTsTest,
   cleanTranspiledTest,
   runCommonJSTests,
@@ -606,20 +638,12 @@ export const buildTest = gulp.series(
 
 export default gulp.series(
   cleanUnwantedFiles,
-  cleanPublish,
-  cleanBuild,
-  cleanTesting,
+  cleanAll,
   tscTsSrc,
   cleanTranspiledSrc,
-  copySrcMdToPublishDir,
-  copySrcJsToBuildDir,
-  copyJsonToBuildDir,
-  copyTestJsToTestingDir,
-  copyJsonToTestingDir,
-  copyBuildTypescriptDeclarationToPublishDir,
-  copyBuildJsToPublishDir,
-  copyBuildJsonToPublishDir,
-  copyPackageJsonsToPublishDir,
+  copyStaticToBuildDir,
+  copyStaticToTestingDir,
+  copyStaticAndGeneratedToPublishDir,
   tscTsTest,// Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   runCommonJSTests,
@@ -627,27 +651,17 @@ export default gulp.series(
 
 export const clean = gulp.series(
   cleanUnwantedFiles,
-  cleanPublish,
-  cleanBuild,
-  cleanTesting
+  cleanAll,
 );
 
 export const patch = gulp.series(
   cleanUnwantedFiles,
-  cleanPublish,
-  cleanBuild,
-  cleanTesting,
+  cleanAll,
   tscTsSrc,
   cleanTranspiledSrc,
-  copySrcMdToPublishDir,
-  copySrcJsToBuildDir,
-  copyJsonToBuildDir,
-  copyTestJsToTestingDir,
-  copyJsonToTestingDir,
-  copyBuildTypescriptDeclarationToPublishDir,
-  copyBuildJsToPublishDir,
-  copyBuildJsonToPublishDir,
-  copyPackageJsonsToPublishDir,
+  copyStaticToBuildDir,
+  copyStaticToTestingDir,
+  copyStaticAndGeneratedToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonPatch,
@@ -661,19 +675,12 @@ export const patch = gulp.series(
 
 export const minor = gulp.series(
   cleanUnwantedFiles,
-  cleanPublish,
-  cleanBuild,
-  cleanTesting,
+  cleanAll,
   tscTsSrc,
   cleanTranspiledSrc,
-  copySrcMdToPublishDir,
-  copySrcJsToBuildDir,
-  copyJsonToBuildDir,
-  copyTestJsToTestingDir,
-  copyJsonToTestingDir,
-  copyBuildTypescriptDeclarationToPublishDir,
-  copyBuildJsToPublishDir,
-  copyPackageJsonsToPublishDir,
+  copyStaticToBuildDir,
+  copyStaticToTestingDir,
+  copyStaticAndGeneratedToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonMinor,
@@ -686,20 +693,12 @@ export const minor = gulp.series(
 
 export const major = gulp.series(
   cleanUnwantedFiles,
-  cleanPublish,
-  cleanBuild,
-  cleanTesting,
+  cleanAll,
   tscTsSrc,
   cleanTranspiledSrc,
-  copySrcMdToPublishDir,
-  copySrcJsToBuildDir,
-  copyJsonToBuildDir,
-  copyTestJsToTestingDir,
-  copyJsonToTestingDir,
-  copyBuildTypescriptDeclarationToPublishDir,
-  copyBuildJsToPublishDir,
-  copyBuildJsonToPublishDir,
-  copyPackageJsonsToPublishDir,
+  copyStaticToBuildDir,
+  copyStaticToTestingDir,
+  copyStaticAndGeneratedToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonMajor,
