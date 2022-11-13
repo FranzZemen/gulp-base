@@ -546,35 +546,35 @@ export function gitPush(cb) {
 }
 
 
-export function runES6Test() {
-  return src([`${testingMjsDir}/**/*.test.js`, `${testingMjsDir}/**/*.test.mjs`, `${testingMjsDir}/**/*.test.cjs`])
-    .pipe(mocha({timeout: mochaTimeout}));
-}
 
-export function runTests(cb) {
-  let changedTypeToCommonJS = false;
+export function runCommonJSTests(cb) {
   if (generateCommonJS) {
     // Need to change the type on the root package.json to commonjs for the tests
     packageJson.type = 'commonjs';
     fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
-    changedTypeToCommonJS = true;
     
-    src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
+    returnsrc([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
       .pipe(mocha({timeout: mochaTimeout}));
-  }
-  if(changedTypeToCommonJS) {
-    packageJson.type = 'module';
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2))
-  }
-  if(generateES) {
-    packageJson.type = 'module';
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
   }
   cb();
 }
 
+export function runES6Test(cb) {
+  // Ensure packageJSON is back to module
+  packageJson.type = 'module';
+  fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+  
+  if(generateES) {
+    return src([`${testingMjsDir}/**/*.test.js`, `${testingMjsDir}/**/*.test.mjs`, `${testingMjsDir}/**/*.test.cjs`])
+      .pipe(mocha({timeout: mochaTimeout}));
+  }
+  cb();
+}
+
+
 export const test = gulp.series(
-  runTests
+  runCommonJSTests,
+  runES6Test
 );
 
 export const buildTest = gulp.series(
@@ -583,7 +583,8 @@ export const buildTest = gulp.series(
   copyJsonToTestingDir,
   tscTsTest,
   cleanTranspiledTest,
-  runTests
+  runCommonJSTests,
+  runES6Test
 );
 
 export default gulp.series(
@@ -604,7 +605,8 @@ export default gulp.series(
   copyPackageJsonsToPublishDir,
   tscTsTest,// Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  runTests);
+  runCommonJSTests,
+  runES6Test);
 
 export const clean = gulp.series(
   cleanUnwantedFiles,
@@ -632,7 +634,8 @@ export const patch = gulp.series(
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonPatch,
-  runTests,
+  runCommonJSTests,
+  runES6Test,
   publish,
   gitAdd,
   gitCommit,
@@ -657,7 +660,8 @@ export const minor = gulp.series(
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonMinor,
-  runTests,
+  runCommonJSTests,
+  runES6Test,
   publish,
   gitAdd,
   gitCommit,
@@ -682,7 +686,8 @@ export const major = gulp.series(
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
   incrementJsonMajor,
-  runTests,
+  runCommonJSTests,
+  runES6Test,
   publish,
   gitAdd,
   gitCommit,
