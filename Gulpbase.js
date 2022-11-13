@@ -160,9 +160,14 @@ export function cleanPublish(cb) {
 }
 
 export function cleanAll(cb) {
-  cleanTesting(cb);
-  cleanPublish(cb);
-  cleanBuild(cb);
+  function CB(err) {
+    if(err) {
+      cb(err);
+    }
+  }
+  cleanTesting((err) => err ? cb(err) : undefined);
+  cleanPublish((err) => err ? cb(err) : undefined);
+  cleanBuild((err) => err ? cb(err) : undefined);
   cb();
 }
 
@@ -257,8 +262,8 @@ export function copyJsonToBuildDir(cb) {
 }
 
 export function copyStaticToBuildDir(cb) {
-  copySrcJsToBuildDir(cb);
-  copyJsonToBuildDir(cb);
+  copySrcJsToBuildDir((err) => err ? cb(err) : undefined);
+  copyJsonToBuildDir((err) => err ? cb(err) : undefined);
   cb();
 }
 
@@ -441,11 +446,11 @@ export function copyPackageJsonsToPublishDir(cb) {
 }
 
 export function copyStaticAndGeneratedToPublishDir(cb) {
-  copySrcMdToPublishDir(cb);
-  copyBuildTypescriptDeclarationToPublishDir(cb);
-  copyBuildJsToPublishDir(cb);
-  copyBuildJsonToPublishDir(cb);
-  copyPackageJsonsToPublishDir(cb);
+  copySrcMdToPublishDir((err) => err ? cb(err) : undefined);
+  copyBuildTypescriptDeclarationToPublishDir((err) => err ? cb(err) : undefined);
+  copyBuildJsToPublishDir((err) => err ? cb(err) : undefined);
+  copyBuildJsonToPublishDir((err) => err ? cb(err) : undefined);
+  copyPackageJsonsToPublishDir((err) => err ? cb(err) : undefined);
   cb();
 }
 
