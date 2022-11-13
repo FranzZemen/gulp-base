@@ -24,6 +24,7 @@ const loadJSON = requireModule;
 
 let generateCommonJS = true;
 let generateES = true;
+let executeCommonJSTests = true;
 // When transpiling Cjs files, an export {} appears at the end.  Lots of threads on this.  For us, we just clean it out.
 // However, we shouldn't be transpiling to .cjs with our bi-loader build (commonjs and cjs)
 let cleanCjsTranspilation = true;
@@ -80,6 +81,10 @@ const unwantedFiles = [
 export const setGenerateCommonJS = function (flag) {
   generateCommonJS = flag;
 };
+
+export const setExecuteCommonJSTests = function(flag) {
+  executeCommonJSTests = flag;
+}
 export const setGenerateES = function (flag) {
   generateES = flag;
 };
@@ -710,7 +715,7 @@ export function gitPush(cb) {
 
 export function runCommonJSTests(cb) {
   console.log('Running CommonJS tests...');
-  if (generateCommonJS) {
+  if (generateCommonJS && executeCommonJSTests) {
     // Need to change the type on the root package.json to commonjs for the tests
     packageJson.type = 'commonjs';
     fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
