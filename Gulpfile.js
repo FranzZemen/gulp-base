@@ -18,21 +18,10 @@ const series = gulp.series;
 
 const requireModule = createRequire(import.meta.url);
 let packageJson = requireModule('./package.json');
-gulpBase.init(packageJson, cwd(), 100, 'master');
+
+gulpBase.init(packageJson, cwd(), 100);
 gulpBase.setCleanTranspiled(true);
 
-const git = simpleGit({
-  baseDir: process.cwd(),
-  binary: 'git',
-  maxConcurrentProcesses: 6,
-  trimmed: false
-});
-const branches = await git.branchLocal();
-if (branches && branches.current) {
-  gulpBase.setMainBranch(branches.current);
-} else {
-  gulpBase.setMainBranch('master');
-}
 
 
 // For this one Npm package, src (Gulpbase.js) is not in src, so need local copy function.

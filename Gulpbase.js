@@ -2,7 +2,8 @@ import {execSync} from 'child_process';
 import {deleteSync} from 'del';
 import * as fs from 'fs';
 import gulp from 'gulp';
-import git from 'gulp-git';
+import gulpGit from 'gulp-git';
+import {simpleGit} from 'simple-git';
 import mocha from 'gulp-mocha';
 import {default as replace} from 'gulp-replace';
 import _ from 'lodash';
@@ -10,14 +11,32 @@ import minimist from 'minimist';
 import {createRequire} from 'module';
 import {join} from 'path';
 
+
 const src = gulp.src;
 const dest = gulp.dest;
 
 export {npmUpdateProject} from './npm-commands.js';
 
-
 const requireModule = createRequire(import.meta.url);
 const loadJSON = requireModule;
+
+
+const gitOptions = {
+  baseDir: process.cwd(),
+  binary: 'git',
+  maxConcurrentProcesses: 6,
+  trimmed: false,
+};
+const git = simpleGit(gitOptions);
+
+const branches = await git.branchLocal();
+// The main branch, but will change to the current branch if it is not the main one
+export let gitBranch = 'main';
+
+if(branches && branches.current) {
+  gitBranch = branches.current;
+}
+
 
 let generateCommonJS = true;
 let generateES = true;
@@ -43,9 +62,6 @@ let tsConfigBuildTestCjs;
 // ts-config file for es processing
 let tsConfigBuildTestMjsFileName = './tsconfig.build-test-mjs.json';
 let tsConfigBuildTestMjs;
-
-// The main branch
-export let mainBranch = 'master'; // TODO: Do this once and for all!
 
 // Source folder
 export let cwd = null;
@@ -86,9 +102,7 @@ export const setGenerateES = function (flag) {
 export const setCleanTranspiled = function (flag) {
   cleanCjsTranspilation = flag;
 };
-export const setMainBranch = function (branch) {
-  mainBranch = branch;
-};
+
 export const setMochaTimeout = function (_timeout) {
   mochaTimeout = _timeout;
 };
@@ -106,11 +120,10 @@ export const setCwd = function (_cwd) {
 };
 
 // Init for package json and files
-export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000, _mainBranch) {
+export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000) {
   gitTimeout = _gitTimeout;
   npmTimeout = _npmTimeout;
   packageJson = _packageJson;
-  mainBranch = _mainBranch;
   cwd = _cwd;
   
   tsConfigBuildCjs = loadJSON(join(cwd, tsConfigBuildCjsFileName));
@@ -118,6 +131,9 @@ export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000, 
   tsConfigBuildTestCjs = loadJSON(join(cwd, tsConfigBuildTestCjsFileName));
   tsConfigBuildTestMjs = loadJSON(join(cwd, tsConfigBuildTestMjsFileName));
 }
+
+
+
 
 // Tasks
 export function cleanTesting(cb) {
@@ -474,7 +490,7 @@ export function cleanGitStatus(data) {
 // Git
 function statusCode() {
   return new Promise((success, error) => {
-    git.status({args: '--porcelain'}, (err, stdout) => {
+    gulpGit.status({args: '--porcelain'}, (err, stdout) => {
       success(cleanGitStatus(stdout));
     });
   });
@@ -486,8 +502,8 @@ export async function gitCheckIn(cb) {
   if (args.m && args.m.trim().length > 0) {
     let files = await statusCode();
     return src(files)
-      .pipe(git.add())
-      .pipe(git.commit(args.m));
+      .pipe(gulpGit.add({args: '--all'}))
+      .pipe(gulpGit.commit(args.m));
   } else return Promise.reject('No source comment');
 }
 
@@ -496,7 +512,7 @@ export function gitAdd(cb) {
   statusCode()
     .then(files => {
       return src(files)
-        .pipe(git.add());
+        .pipe(gulpGit.add({args: '--all'}));
     })
     .then(result => {
       setTimeout(() => {
@@ -517,7 +533,7 @@ export function gitCommit(cb) {
     statusCode()
       .then(files => {
         return src(files)
-          .pipe(git.commit(args.m));
+          .pipe(gulpGit.commit(args.m));
       })
       .then(result => {
         setTimeout(() => {
@@ -538,17 +554,16 @@ export function gitCommit(cb) {
 
 // GIt
 export function gitPush(cb) {
-  console.log('Pushing to ' + mainBranch);
-  git.push('origin', mainBranch, function (err) {
+  console.log('Pushing to ' + gitBranch);
+  gulpGit.push('origin', gitBranch, function (err) {
     if (err) throw err;
     cb();
   });
 }
 
 
-
 export function runCommonJSTests(cb) {
-  console.log('Running CommonJS tests...')
+  console.log('Running CommonJS tests...');
   if (generateCommonJS) {
     // Need to change the type on the root package.json to commonjs for the tests
     packageJson.type = 'commonjs';
@@ -561,12 +576,12 @@ export function runCommonJSTests(cb) {
 }
 
 export function runES6Test(cb) {
-  console.log('Running ES tests...')
+  console.log('Running ES tests...');
   // Ensure packageJSON is back to module
   packageJson.type = 'module';
   fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
   
-  if(generateES) {
+  if (generateES) {
     return src([`${testingMjsDir}/**/*.test.js`, `${testingMjsDir}/**/*.test.mjs`, `${testingMjsDir}/**/*.test.cjs`])
       .pipe(mocha({timeout: mochaTimeout}));
   }
@@ -694,3 +709,4 @@ export const major = gulp.series(
   gitAdd,
   gitCommit,
   gitPush);
+
