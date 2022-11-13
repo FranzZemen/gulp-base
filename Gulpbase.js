@@ -10,7 +10,7 @@ import _ from 'lodash';
 import minimist from 'minimist';
 import {createRequire} from 'module';
 import {join} from 'path';
-
+import mergeStream from 'merge-stream';
 
 const src = gulp.src;
 const dest = gulp.dest;
@@ -160,11 +160,6 @@ export function cleanPublish(cb) {
 }
 
 export function cleanAll(cb) {
-  function CB(err) {
-    if(err) {
-      cb(err);
-    }
-  }
   cleanTesting((err) => err ? cb(err) : undefined);
   cleanPublish((err) => err ? cb(err) : undefined);
   cleanBuild((err) => err ? cb(err) : undefined);
@@ -237,127 +232,234 @@ export function tscTsTest(cb) {
 
 // Copy Javascript and any standalone type definitions to build
 export function copySrcJsToBuildDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
+    stream1 = src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildCjsDir));
   }
   if (generateES) {
-    return src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
+    stream2 = src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildMjsDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 // Copy supporting JSON to build directories
 export function copyJsonToBuildDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([tsSrcDir + '/**/*.json'])
+    stream1 = src([tsSrcDir + '/**/*.json'])
       .pipe(dest(buildCjsDir));
   }
   if (generateES) {
-    return src([tsSrcDir + '/**/*.json'])
+    stream2 = src([tsSrcDir + '/**/*.json'])
       .pipe(dest(buildMjsDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 export function copyStaticToBuildDir(cb) {
-  copySrcJsToBuildDir((err) => err ? cb(err) : undefined);
-  copyJsonToBuildDir((err) => err ? cb(err) : undefined);
-  cb();
+  let stream1 = copySrcJsToBuildDir((err) => err ? cb(err) : undefined);
+  let stream2 = copyJsonToBuildDir((err) => err ? cb(err) : undefined);
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 /********** Move static (not transpiled/transformed files to test directories **********/
 
 // Copy Javascript tests to testing
 export function copyTestJsToTestingDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+    stream1 = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
       .pipe(dest(testingCjsDir));
   }
   if (generateES) {
-    return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
+    stream2 = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
       .pipe(dest(testingMjsDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 // Copy JSON supporting tests
 export function copyJsonToTestingDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([tsTestDir + '/**/*.json'])
+    stream1 = src([tsTestDir + '/**/*.json'])
       .pipe(dest(testingCjsDir));
   }
   if (generateES) {
-    return src([tsTestDir + '/**/*.json'])
+    stream2 = src([tsTestDir + '/**/*.json'])
       .pipe(dest(testingMjsDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 export function copyStaticToTestingDir(cb) {
-  copyTestJsToTestingDir(cb);
-  copyJsonToTestingDir(cb);
-  cb();
+  let stream1 = copyTestJsToTestingDir(cb);
+  let stream2 = copyJsonToTestingDir(cb);
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 /********** Copy Static To Publish **********/
 
 // Copy wikis
 export function copySrcMdToPublishDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([tsSrcDir + '/**/*.md', './*.md'])
+    stream1 = src([tsSrcDir + '/**/*.md', './*.md'])
       .pipe(dest(cjsDistDir));
   }
   if (generateES) {
-    return src([tsSrcDir + '/**/*.md', './*.md'])
+    stream2 = src([tsSrcDir + '/**/*.md', './*.md'])
       .pipe(dest(mjsDistDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 // Copy type declarations
 export function copyBuildTypescriptDeclarationToPublishDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
+    stream1 = src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
       .pipe(dest(cjsDistDir));
   }
   if (generateES) {
-    return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
+    stream2 = src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
       .pipe(dest(mjsDistDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 // Copy all Javascript to publish distributions
 export function copyBuildJsToPublishDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([buildCjsDir + '/**/*.js', buildCjsDir + '/**/*.cjs', buildCjsDir + '/**/*.mjs'])
+    stream1 = src([buildCjsDir + '/**/*.js', buildCjsDir + '/**/*.cjs', buildCjsDir + '/**/*.mjs'])
       .pipe(dest(cjsDistDir));
   }
   if (generateES) {
-    return src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
+    stream2 = src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
       .pipe(dest(mjsDistDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 // Copy JSON to distributions
 export function copyBuildJsonToPublishDir(cb) {
+  let stream1, stream2;
   if (generateCommonJS) {
-    src([buildCjsDir + '/**/*.json'])
+    stream1 = src([buildCjsDir + '/**/*.json'])
       .pipe(dest(cjsDistDir));
   }
   if (generateES) {
-    return src([buildMjsDir + '/**/*.json'])
+    stream2 = src([buildMjsDir + '/**/*.json'])
       .pipe(dest(mjsDistDir));
   }
-  cb();
+  if(stream1) {
+    if(stream2) {
+      return mergeStream(stream1, stream2);
+    } else {
+      return stream1;
+    }
+  } else if(stream2) {
+    return stream2;
+  } else {
+    cb();
+  }
 }
 
 // Copy the package JSON file to the distribution folders
 export function copyPackageJsonsToPublishDir(cb) {
-  
   try {
     fs.mkdirSync(publishDir);
   } catch (error) {
@@ -446,17 +548,23 @@ export function copyPackageJsonsToPublishDir(cb) {
 }
 
 export function copyStaticAndGeneratedToPublishDir(cb) {
-  copySrcMdToPublishDir((err) => err ? cb(err) : undefined);
-  copyBuildTypescriptDeclarationToPublishDir((err) => err ? cb(err) : undefined);
-  copyBuildJsToPublishDir((err) => err ? cb(err) : undefined);
-  copyBuildJsonToPublishDir((err) => err ? cb(err) : undefined);
+  let streams = [];
+  let stream1 = copySrcMdToPublishDir((err) => err ? cb(err) : undefined);
+  if(stream1) streams.push(stream1);
+  let stream2 = copyBuildTypescriptDeclarationToPublishDir((err) => err ? cb(err) : undefined);
+  if(stream2) streams.push(stream2);
+  let stream3 = copyBuildJsToPublishDir((err) => err ? cb(err) : undefined);
+  if(stream3) streams.push(stream3);
+  let stream4 = copyBuildJsonToPublishDir((err) => err ? cb(err) : undefined);
+  if(stream4) streams.push(stream4);
   copyPackageJsonsToPublishDir((err) => err ? cb(err) : undefined);
+  if(streams.length > 0) {
+    return mergeStream(...streams);
+  }
   cb();
 }
 
-
-
-
+/********** Publishing Functions **********/
 
 // Increment patch version
 export function incrementJsonPatch(cb) {

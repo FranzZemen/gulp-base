@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "17.0.2",
+  "version": "17.0.3",
   "description": "Common Gulp base",
   "type": "module",
   "main": "publish/dist/cjs/index.js",
@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@types/chai": "^4.3.4",
+    "@types/merge-stream": "^1.1.2",
     "@types/mocha": "^10.0.0",
     "chai": "^4.3.7",
     "del": "^7.0.0",
