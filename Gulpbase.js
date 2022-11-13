@@ -30,8 +30,6 @@ let executeCommonJSTests = true;
 let cleanCjsTranspilation = true;
 // The top level package.json as an object
 let packageJson = null;
-// Timeout for git
-let gitTimeout = null;
 // We want to wait after an NPM publish to support npmu as (especially on Sundays) npm is slow to make freshly published packages visible
 let npmTimeout = null;
 
@@ -96,10 +94,6 @@ export const setMochaTimeout = function (_timeout) {
   mochaTimeout = _timeout;
 };
 
-export const setGitTimeout = function (_timeout) {
-  gitTimeout = _timeout;
-};
-
 export const setNpmTimeout = function (_timeout) {
   npmTimeout = _timeout;
 };
@@ -127,8 +121,7 @@ if (branches && branches.current) {
 
 /********** Initialization - must always be called **********/
 
-export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000) {
-  gitTimeout = _gitTimeout;
+export function init(_packageJson, _cwd, _npmTimeout = 5000) {
   npmTimeout = _npmTimeout;
   packageJson = _packageJson;
   cwd = _cwd;
@@ -664,11 +657,11 @@ export function gitAdd(cb) {
     .then(async files => {
       const stream = src(files, {'allowEmpty': true})
         .pipe(gulpGit.add({args: '--all'}));
-      await new Promise(fulfill => stream.on('finish', fulfill));
+      return await new Promise(fulfill => stream.on('finish', fulfill));
     })
     .catch(err => {
       console.log(err, err.stack);
-      cb();
+      cb(err);
     });
 }
 
@@ -677,24 +670,19 @@ export function gitCommit(cb) {
   const args = minimist(process.argv.slice(2));
   if (args.m && args.m.trim().length > 0) {
     statusCode()
-      .then(files => {
-        return src(files)
+      .then(async files => {
+        const stream = src(files)
           .pipe(gulpGit.commit(args.m));
-      })
-      .then(result => {
-        setTimeout(() => {
-          console.log('Awaiting ' + gitTimeout + 'ms.  Next line should be \"Finished \'gitCommit\'\" If Add activity continues beyond this limit adjust through gitbase.init');
-          cb();
-        }, gitTimeout);
+        return await new Promise(fulfill => stream.on('finish', fulfill));
       })
       .catch(err => {
         console.log(err, err.stack);
-        cb();
+        cb(err);
       });
   } else {
     let err = new Error('No source comment');
     console.log(err, err.stack);
-    throw err;
+    cb(err);
   }
 }
 
@@ -702,8 +690,7 @@ export function gitCommit(cb) {
 export function gitPush(cb) {
   console.log('Pushing to ' + gitBranch);
   gulpGit.push('origin', gitBranch, function (err) {
-    if (err) throw err;
-    cb();
+    cb(err);
   });
 }
 
