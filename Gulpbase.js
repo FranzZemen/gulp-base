@@ -669,7 +669,7 @@ export function gitAdd(cb) {
 export function gitCommit(cb) {
   const args = minimist(process.argv.slice(2));
   if (args.m && args.m.trim().length > 0) {
-    statusCode()
+    return statusCode()
       .then(async files => {
         const stream = src(files)
           .pipe(gulpGit.commit(args.m));
