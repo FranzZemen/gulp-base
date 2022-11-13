@@ -606,7 +606,6 @@ export function incrementJsonMajor(cb) {
   cb();
 }
 
-// Public
 export function publish(cb) {
   console.log(`npm publish ${publishDir}`);
   const result = execSync(`npm publish ${publishDir}`, {});
@@ -764,10 +763,10 @@ export const patch = gulp.series(
   cleanTranspiledSrc,
   copyStaticToBuildDir,
   copyStaticToTestingDir,
+  incrementJsonPatch,
   copyStaticAndGeneratedToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  incrementJsonPatch,
   runCommonJSTests,
   runES6Test,
   publish,
@@ -783,10 +782,10 @@ export const minor = gulp.series(
   cleanTranspiledSrc,
   copyStaticToBuildDir,
   copyStaticToTestingDir,
+  incrementJsonMinor,
   copyStaticAndGeneratedToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  incrementJsonMinor,
   runCommonJSTests,
   runES6Test,
   publish,
@@ -801,10 +800,10 @@ export const major = gulp.series(
   cleanTranspiledSrc,
   copyStaticToBuildDir,
   copyStaticToTestingDir,
+  incrementJsonMajor,
   copyStaticAndGeneratedToPublishDir,
   tscTsTest, // Must be transpiled after publish dir as it refers to publish index.d.ts
   cleanTranspiledTest,
-  incrementJsonMajor,
   runCommonJSTests,
   runES6Test,
   publish,
