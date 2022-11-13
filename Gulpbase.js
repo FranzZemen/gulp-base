@@ -397,7 +397,6 @@ export function copyPackageJsonsToPublishDir(cb) {
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJson, null, 2));
   if (generateCommonJS) {
     fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
-    fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
   }
   if (generateES) {
     fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
