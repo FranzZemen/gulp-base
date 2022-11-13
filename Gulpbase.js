@@ -546,42 +546,32 @@ export function gitPush(cb) {
 }
 
 
-export function runCommonJSTests(cb) {
-  if (generateCommonJS) {
-    // Need to change the type on the root package.json to commonjs for the tests
-    packageJson.type = 'commonjs';
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
-    
-    src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
-      .pipe(mocha({timeout: mochaTimeout}));
-    
-    // Now reset it
-    packageJson.type = 'module';
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
-  }
-}
-
 export function runES6Test() {
   return src([`${testingMjsDir}/**/*.test.js`, `${testingMjsDir}/**/*.test.mjs`, `${testingMjsDir}/**/*.test.cjs`])
     .pipe(mocha({timeout: mochaTimeout}));
 }
 
-export function runTests() {
+export function runTests(cb) {
+  let changedTypeToCommonJS = false;
   if (generateCommonJS) {
-    runCommonJSTests();
+    // Need to change the type on the root package.json to commonjs for the tests
+    packageJson.type = 'commonjs';
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+    changedTypeToCommonJS = true;
+    
+    src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
+      .pipe(mocha({timeout: mochaTimeout}));
   }
-  if (generateES) {
-    return runES6Test();
+  if(changedTypeToCommonJS) {
+    packageJson.type = 'module';
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2))
   }
+  if(generateES) {
+    packageJson.type = 'module';
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+  }
+  cb();
 }
-
-export const testCommonJS = gulp.series(
-  runCommonJSTests
-);
-
-export const testES6 = gulp.series(
-  runES6Test
-);
 
 export const test = gulp.series(
   runTests
