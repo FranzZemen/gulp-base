@@ -108,7 +108,7 @@ const gitOptions = {
   baseDir: process.cwd(),
   binary: 'git',
   maxConcurrentProcesses: 6,
-  trimmed: false,
+  trimmed: false
 };
 const git = simpleGit(gitOptions);
 
@@ -116,7 +116,7 @@ const branches = await git.branchLocal();
 // The main branch, but will change to the current branch if it is not the main one
 export let gitBranch = 'main';
 
-if(branches && branches.current) {
+if (branches && branches.current) {
   gitBranch = branches.current;
 }
 
@@ -241,13 +241,13 @@ export function copySrcJsToBuildDir(cb) {
     stream2 = src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildMjsDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -265,13 +265,13 @@ export function copyJsonToBuildDir(cb) {
     stream2 = src([tsSrcDir + '/**/*.json'])
       .pipe(dest(buildMjsDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -281,13 +281,13 @@ export function copyJsonToBuildDir(cb) {
 export function copyStaticToBuildDir(cb) {
   let stream1 = copySrcJsToBuildDir((err) => err ? cb(err) : undefined);
   let stream2 = copyJsonToBuildDir((err) => err ? cb(err) : undefined);
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -307,13 +307,13 @@ export function copyTestJsToTestingDir(cb) {
     stream2 = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
       .pipe(dest(testingMjsDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -331,13 +331,13 @@ export function copyJsonToTestingDir(cb) {
     stream2 = src([tsTestDir + '/**/*.json'])
       .pipe(dest(testingMjsDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -347,13 +347,13 @@ export function copyJsonToTestingDir(cb) {
 export function copyStaticToTestingDir(cb) {
   let stream1 = copyTestJsToTestingDir(cb);
   let stream2 = copyJsonToTestingDir(cb);
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -373,13 +373,13 @@ export function copySrcMdToPublishDir(cb) {
     stream2 = src([tsSrcDir + '/**/*.md', './*.md'])
       .pipe(dest(mjsDistDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -397,13 +397,13 @@ export function copyBuildTypescriptDeclarationToPublishDir(cb) {
     stream2 = src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
       .pipe(dest(mjsDistDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -421,13 +421,13 @@ export function copyBuildJsToPublishDir(cb) {
     stream2 = src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
       .pipe(dest(mjsDistDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -445,13 +445,13 @@ export function copyBuildJsonToPublishDir(cb) {
     stream2 = src([buildMjsDir + '/**/*.json'])
       .pipe(dest(mjsDistDir));
   }
-  if(stream1) {
-    if(stream2) {
+  if (stream1) {
+    if (stream2) {
       return mergeStream(stream1, stream2);
     } else {
       return stream1;
     }
-  } else if(stream2) {
+  } else if (stream2) {
     return stream2;
   } else {
     cb();
@@ -550,15 +550,15 @@ export function copyPackageJsonsToPublishDir(cb) {
 export function copyStaticAndGeneratedToPublishDir(cb) {
   let streams = [];
   let stream1 = copySrcMdToPublishDir((err) => err ? cb(err) : undefined);
-  if(stream1) streams.push(stream1);
+  if (stream1) streams.push(stream1);
   let stream2 = copyBuildTypescriptDeclarationToPublishDir((err) => err ? cb(err) : undefined);
-  if(stream2) streams.push(stream2);
+  if (stream2) streams.push(stream2);
   let stream3 = copyBuildJsToPublishDir((err) => err ? cb(err) : undefined);
-  if(stream3) streams.push(stream3);
+  if (stream3) streams.push(stream3);
   let stream4 = copyBuildJsonToPublishDir((err) => err ? cb(err) : undefined);
-  if(stream4) streams.push(stream4);
+  if (stream4) streams.push(stream4);
   copyPackageJsonsToPublishDir((err) => err ? cb(err) : undefined);
-  if(streams.length > 0) {
+  if (streams.length > 0) {
     return mergeStream(...streams);
   }
   cb();
@@ -714,9 +714,12 @@ export function runCommonJSTests(cb) {
     // Need to change the type on the root package.json to commonjs for the tests
     packageJson.type = 'commonjs';
     fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
-    
     return src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
-      .pipe(mocha({timeout: mochaTimeout}));
+      .pipe(mocha({timeout: mochaTimeout}))
+      .on('error', () => {
+        packageJson.type = 'commonjs';
+        fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+      });
   }
   cb();
 }
@@ -764,7 +767,7 @@ export default gulp.series(
 
 export const clean = gulp.series(
   cleanUnwantedFiles,
-  cleanAll,
+  cleanAll
 );
 
 export const patch = gulp.series(
