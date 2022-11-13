@@ -82,9 +82,9 @@ export const setGenerateCommonJS = function (flag) {
   generateCommonJS = flag;
 };
 
-export const setExecuteCommonJSTests = function(flag) {
+export const setExecuteCommonJSTests = function (flag) {
   executeCommonJSTests = flag;
-}
+};
 export const setGenerateES = function (flag) {
   generateES = flag;
 };
@@ -660,16 +660,11 @@ export async function gitCheckIn(cb) {
 
 // Git
 export function gitAdd(cb) {
-  statusCode()
-    .then(files => {
-      return src(files)
+  return statusCode()
+    .then(async files => {
+      const stream = src(files, {'allowEmpty': true})
         .pipe(gulpGit.add({args: '--all'}));
-    })
-    .then(result => {
-      setTimeout(() => {
-        console.log('Awaiting ' + gitTimeout + 'ms.  Next line should be \"Finished \'gitAdd\'\" If Add activity continues beyond this limit adjust through gitbase.init');
-        cb();
-      }, gitTimeout);
+      await new Promise(fulfill => stream.on('finish', fulfill));
     })
     .catch(err => {
       console.log(err, err.stack);
