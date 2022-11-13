@@ -671,7 +671,7 @@ export function gitCommit(cb) {
   if (args.m && args.m.trim().length > 0) {
     return statusCode()
       .then(async files => {
-        const stream = src(files)
+        const stream = src(files,{'allowEmpty': true})
           .pipe(gulpGit.commit(args.m));
         return await new Promise(fulfill => stream.on('finish', fulfill));
       })
