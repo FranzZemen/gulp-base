@@ -1,5 +1,4 @@
 import {execSync} from 'child_process';
-import {join} from 'path';
 import {deleteSync} from 'del';
 import * as fs from 'fs';
 import gulp from 'gulp';
@@ -9,9 +8,7 @@ import {default as replace} from 'gulp-replace';
 import _ from 'lodash';
 import minimist from 'minimist';
 import {createRequire} from 'module';
-
-import {inspect} from 'node:util';
-import * as path from 'path';
+import {join} from 'path';
 
 const src = gulp.src;
 const dest = gulp.dest;
@@ -104,9 +101,9 @@ export const setNpmTimeout = function (_timeout) {
   npmTimeout = _timeout;
 };
 
-export const setCwd = function(_cwd) {
+export const setCwd = function (_cwd) {
   cwd = _cwd;
-}
+};
 
 // Init for package json and files
 export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000, _mainBranch) {
@@ -116,10 +113,10 @@ export function init(_packageJson, _cwd, _gitTimeout = 100, _npmTimeout = 5000, 
   mainBranch = _mainBranch;
   cwd = _cwd;
   
-  tsConfigBuildCjs = loadJSON(join(cwd,tsConfigBuildCjsFileName));
-  tsConfigBuildMjs = loadJSON(join(cwd,tsConfigBuildMjsFileName));
-  tsConfigBuildTestCjs = loadJSON(join(cwd,tsConfigBuildTestCjsFileName));
-  tsConfigBuildTestMjs = loadJSON(join(cwd,tsConfigBuildTestMjsFileName));
+  tsConfigBuildCjs = loadJSON(join(cwd, tsConfigBuildCjsFileName));
+  tsConfigBuildMjs = loadJSON(join(cwd, tsConfigBuildMjsFileName));
+  tsConfigBuildTestCjs = loadJSON(join(cwd, tsConfigBuildTestCjsFileName));
+  tsConfigBuildTestMjs = loadJSON(join(cwd, tsConfigBuildTestMjsFileName));
 }
 
 // Tasks
@@ -155,7 +152,7 @@ export function tscTsSrc(cb) {
       console.log(result);
     }
   }
-  if(generateES) {
+  if (generateES) {
     result = execSync('tsc --project ' + tsConfigBuildMjsFileName, {cwd: './', stdio: 'inherit'});
     if (result) {
       console.log(result);
@@ -173,7 +170,7 @@ export function tscTsTest(cb) {
       console.log(result);
     }
   }
-  if(generateES) {
+  if (generateES) {
     result = execSync('tsc --project ' + tsConfigBuildTestMjsFileName, {cwd: './', stdio: 'inherit'});
     if (result) {
       console.log(result);
@@ -212,7 +209,7 @@ export function copySrcJsToBuildDir(cb) {
     src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildCjsDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([tsSrcDir + '/**/*.js', tsSrcDir + '/**/*.mjs', tsSrcDir + '/**/*.cjs', tsSrcDir + '/**/*.d.ts', tsSrcDir + '/**/*.d.mts', tsSrcDir + '/**/*.d.cts'])
       .pipe(dest(buildMjsDir));
   }
@@ -225,7 +222,7 @@ export function copyTestJsToTestingDir(cb) {
     src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
       .pipe(dest(testingCjsDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.mjs'])
       .pipe(dest(testingMjsDir));
   }
@@ -238,7 +235,7 @@ export function copyJsonToBuildDir(cb) {
     src([tsSrcDir + '/**/*.json'])
       .pipe(dest(buildCjsDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([tsSrcDir + '/**/*.json'])
       .pipe(dest(buildMjsDir));
   }
@@ -251,7 +248,7 @@ export function copyJsonToTestingDir(cb) {
     src([tsTestDir + '/**/*.json'])
       .pipe(dest(testingCjsDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([tsTestDir + '/**/*.json'])
       .pipe(dest(testingMjsDir));
   }
@@ -264,7 +261,7 @@ export function copyBuildJsonToPublishDir(cb) {
     src([buildCjsDir + '/**/*.json'])
       .pipe(dest(cjsDistDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([buildMjsDir + '/**/*.json'])
       .pipe(dest(mjsDistDir));
   }
@@ -277,7 +274,7 @@ export function copySrcMdToPublishDir(cb) {
     src([tsSrcDir + '/**/*.md', './*.md'])
       .pipe(dest(cjsDistDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([tsSrcDir + '/**/*.md', './*.md'])
       .pipe(dest(mjsDistDir));
   }
@@ -297,7 +294,7 @@ export function copyBuildJsToPublishDir(cb) {
     src([buildCjsDir + '/**/*.js', buildCjsDir + '/**/*.cjs', buildCjsDir + '/**/*.mjs'])
       .pipe(dest(cjsDistDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([buildMjsDir + '/**/*.js', buildMjsDir + '/**/*.cjs', buildMjsDir + '/**/*.mjs'])
       .pipe(dest(mjsDistDir));
   }
@@ -310,7 +307,7 @@ export function copyBuildTypescriptDeclarationToPublishDir(cb) {
     src([buildCjsDir + '/**/*.d.ts', buildCjsDir + '/**/*.d.mts', buildCjsDir + '/**/*.d.cts'])
       .pipe(dest(cjsDistDir));
   }
-  if(generateES) {
+  if (generateES) {
     return src([buildMjsDir + '/**/*.d.ts', buildMjsDir + '/**/*.d.mts', buildMjsDir + '/**/*.d.cts'])
       .pipe(dest(mjsDistDir));
   }
@@ -343,7 +340,7 @@ export function copyPackageJsonsToPublishDir(cb) {
       }
     }
   }
-  if(generateES) {
+  if (generateES) {
     try {
       fs.mkdirSync(mjsDistDir);
     } catch (error) {
@@ -371,7 +368,7 @@ export function copyPackageJsonsToPublishDir(cb) {
   delete baseJson.types;
   delete baseJson.exports;
   
-
+  
   const publishSpec = {
     main: 'dist/cjs/index.js',
     module: 'dist/mjs/index.js',
@@ -382,8 +379,8 @@ export function copyPackageJsonsToPublishDir(cb) {
         'require': './dist/cjs/index.js'
       }
     }
-  }
-
+  };
+  
   const packageDistJson = _.merge({}, baseJson);
   
   const publishPackageJson = _.merge({}, baseJson, publishSpec);
@@ -392,8 +389,8 @@ export function copyPackageJsonsToPublishDir(cb) {
     cjsPackageJson = _.merge({}, packageDistJson, {type: 'commonjs'});
   }
   let mjsPackageJson;
-  if(generateES) {
-     mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
+  if (generateES) {
+    mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
   }
   
   // Write the dist package.json as well as the publish one
@@ -402,7 +399,7 @@ export function copyPackageJsonsToPublishDir(cb) {
     fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
     fs.writeFileSync(testingCjsDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
   }
-  if(generateES) {
+  if (generateES) {
     fs.writeFileSync(mjsDistDir + '/package.json', JSON.stringify(mjsPackageJson, null, 2));
   }
   cb();
@@ -550,10 +547,18 @@ export function gitPush(cb) {
 }
 
 
-export function runCommonJSTests() {
+export function runCommonJSTests(cb) {
   if (generateCommonJS) {
-    return src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
+    // Need to change the type on the root package.json to commonjs for the tests
+    packageJson.type = 'commonjs';
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
+    
+    src([`${testingCjsDir}/**/*.test.js`, `${testingCjsDir}/**/*.test.mjs`, `${testingCjsDir}/**/*.test.cjs`])
       .pipe(mocha({timeout: mochaTimeout}));
+    
+    // Now reset it
+    packageJson.type = 'module';
+    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
   }
 }
 
@@ -566,7 +571,7 @@ export function runTests() {
   if (generateCommonJS) {
     runCommonJSTests();
   }
-  if(generateES) {
+  if (generateES) {
     return runES6Test();
   }
 }
