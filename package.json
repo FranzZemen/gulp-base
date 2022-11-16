@@ -1,6 +1,6 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "17.0.10",
+  "version": "17.0.11",
   "description": "Common Gulp base",
   "type": "module",
   "main": "publish/dist/cjs/index.js",
@@ -44,7 +44,7 @@
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.7",
     "mocha": "^10.1.0",
-    "simple-git": "^3.14.1",
-    "typescript": "^4.8.4"
+    "simple-git": "^3.15.0",
+    "typescript": "^4.9.3"
   }
 }
