@@ -65,8 +65,10 @@ export let testingMjsDir = './testing-mjs';
 // NPM publish folder
 export let publishDir = './publish';
 // CommonJS distribution
-export let cjsDistDir = publishDir + '/dist/cjs';
-export let mjsDistDir = publishDir + '/dist/mjs';
+export let cjsDistDirName = 'cjs';
+export let mjsDistDirName = 'mjs';
+export let cjsDistDir = publishDir + `/${cjsDistDirName}`;
+export let mjsDistDir = publishDir + `/${mjsDistDirName}`;
 // Timeout for tests
 export let mochaTimeout = 2000;
 
@@ -465,13 +467,6 @@ export function copyPackageJsonsToPublishDir(cb) {
       cb(error);
     }
   }
-  try {
-    fs.mkdirSync(`${publishDir}/dist`);
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      cb(error);
-    }
-  }
   if (generateCommonJS) {
     try {
       fs.mkdirSync(cjsDistDir);
@@ -511,13 +506,13 @@ export function copyPackageJsonsToPublishDir(cb) {
   
   
   const publishSpec = {
-    main: 'dist/cjs/index.js',
-    module: 'dist/mjs/index.js',
-    types: 'dist/mjs/index.d.ts',
+    main:  `${cjsDistDirName}/index.js`,
+    module: `${mjsDistDirName}/index.js`,
+    types: `${mjsDistDirName}/index.d.ts`,
     exports: {
       '.': {
-        'import': './dist/mjs/index.js',
-        'require': './dist/cjs/index.js'
+        'import': `./${mjsDistDirName}/index.js`,
+        'require': `./${cjsDistDirName}/index.js`
       }
     }
   };

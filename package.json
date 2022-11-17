@@ -1,15 +1,15 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "17.0.11",
+  "version": "18.0.0",
   "description": "Common Gulp base",
   "type": "module",
-  "main": "publish/dist/cjs/index.js",
-  "module": "publish/dist/mjs/index.js",
-  "types": "publish/dist/mjs/index.d.ts",
+  "main": "publish/cjs/index.js",
+  "module": "publish/mjs/index.js",
+  "types": "publish/mjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./publish/dist/mjs/index.js",
-      "require": "./publish/dist/cjs/index.js"
+      "import": "./publish/mjs/index.js",
+      "require": "./publish/cjs/index.js"
     }
   },
   "scripts": {
