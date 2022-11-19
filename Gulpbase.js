@@ -214,12 +214,18 @@ export function tscTsSrc(cb) {
 export function tscTsTest(cb) {
   let result;
   if (generateCommonJS) {
+    let stream = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.mjs', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
+      .pipe(replace(/\/mjs\//g, '/cjs/'))
+      .pipe(dest(tsTestDir));
     result = execSync('tsc --project ' + tsConfigBuildTestCjsFileName, {cwd: './', stdio: 'inherit'});
     if (result) {
       console.log(result);
     }
   }
   if (generateES) {
+    let stream = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.mjs', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
+      .pipe(replace(/\/cjs\//g, '/mgs/'))
+      .pipe(dest(tsTestDir));
     result = execSync('tsc --project ' + tsConfigBuildTestMjsFileName, {cwd: './', stdio: 'inherit'});
     if (result) {
       console.log(result);
@@ -529,7 +535,7 @@ export function copyPackageJsonsToPublishDir(cb) {
     mjsPackageJson = _.merge({}, packageDistJson, {type: 'module'});
   }
   
-  // Write the dist package.json as well as the publish one
+  // Write the f package.json as well as the publish one
   fs.writeFileSync(publishDir + '/package.json', JSON.stringify(publishPackageJson, null, 2));
   if (generateCommonJS) {
     fs.writeFileSync(cjsDistDir + '/package.json', JSON.stringify(cjsPackageJson, null, 2));
