@@ -211,27 +211,43 @@ export function tscTsSrc(cb) {
 }
 
 // Transpile tests.  Project files should point to respective testing folders
-export function tscTsTest(cb) {
-  let result;
+export async function tscTsTest(cb) {
+  let result; let promiseCjs, promiseEs;
   if (generateCommonJS) {
-    let stream = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.mjs', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
+    let streamCjs = src([tsTestDir + '/**/*.ts',tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
       .pipe(replace(/\/mjs\//g, '/cjs/'))
       .pipe(dest(tsTestDir));
+    promiseCjs = await new Promise(fulfill => streamCjs.on('finish', fulfill));
     result = execSync('tsc --project ' + tsConfigBuildTestCjsFileName, {cwd: './', stdio: 'inherit'});
     if (result) {
       console.log(result);
     }
   }
   if (generateES) {
-    let stream = src([tsTestDir + '/**/*.js', tsTestDir + '/**/*.mjs', tsTestDir + '/**/*.cjs', tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
-      .pipe(replace(/\/cjs\//g, '/mgs/'))
+    let streamEs = src([tsTestDir + '/**/*.ts',tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
+      .pipe(replace(/\/cjs\//g, '/mjs/'))
       .pipe(dest(tsTestDir));
+    promiseEs = await new Promise(fulfill => streamEs.on('finish', fulfill));
     result = execSync('tsc --project ' + tsConfigBuildTestMjsFileName, {cwd: './', stdio: 'inherit'});
     if (result) {
       console.log(result);
     }
   }
-  cb();
+  if(promiseCjs) {
+    if(promiseEs) {
+      return Promise.all([promiseCjs, promiseEs]);
+    } else {
+      // Return test files to ES version
+      let streamEs = src([tsTestDir + '/**/*.ts',tsTestDir + '/**/*.d.ts', tsTestDir + '/**/*.d.mts', tsTestDir + '/**/*.d.cts'])
+        .pipe(replace(/\/cjs\//g, '/mjs/'))
+        .pipe(dest(tsTestDir));
+      return promiseCjs
+    }
+  } else if (promiseEs) {
+    return promiseEs;
+  } else {
+    return Promise.resolve();
+  }
 }
 
 /********** Move static (not transpiled/transformed files to build directories **********/
