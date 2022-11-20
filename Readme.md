@@ -48,7 +48,7 @@ created is described below in [Scaffolding][1]
 
 
 
-[1] https://www.google.com
+[1]: https://www.google.com
 
 
 
