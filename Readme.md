@@ -66,6 +66,6 @@ created is described below in [Scaffolding][]
 
 [//]: # (Page Links)
 
-[node-release]:               https://www.nodejs.org
-[typescript-instructions]:    https://www.typescriptlang.org/download
+[node release]:               https://www.nodejs.org
+[typescript instructions]:    https://www.typescriptlang.org/download
 [scaffolding]:                #scaffolding
