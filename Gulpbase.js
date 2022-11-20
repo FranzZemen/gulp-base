@@ -1,6 +1,6 @@
-import {execSync} from 'child_process';
+import {execSync} from 'node:child_process';
 import {deleteSync} from 'del';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import gulp from 'gulp';
 import gulpGit from 'gulp-git';
 import {simpleGit} from 'simple-git';
@@ -8,8 +8,8 @@ import mocha from 'gulp-mocha';
 import {default as replace} from 'gulp-replace';
 import _ from 'lodash';
 import minimist from 'minimist';
-import {createRequire} from 'module';
-import {join} from 'path';
+import {createRequire} from 'node:module';
+import {join} from 'nodepath';
 import mergeStream from 'merge-stream';
 
 const src = gulp.src;

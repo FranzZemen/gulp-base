@@ -62,22 +62,6 @@ export function copyPackageJsonToPublishDir(cb) {
   cb();
 }
 
-
-// The default is to build the dummy stuff as any other module
-export default  _default;
-/*
-export default series(
-  gulpBase.tscTsSrc,
-  gulpBase.cleanTranspiledSrc,
-  //gulpBase.transpileTypescriptToBuildDir,  // Test to see that typescript is transferred
-  gulpBase.copySrcJsToBuildDir, // Test to see that js is copied
-  //gulpBase.transpileTestTypescriptToTestingDir,
-  gulpBase.copyTestJsToTestingDir,
-  gulpBase.copyBuildTypescriptDeclarationToPublishDir,
-  copyGulpBaseToPublishDir,
-  gulpBase.copyPackageJsonsToPublishDir);
-*/
-
 export const test = gulpBase.test;
 export const cleanPublish = gulpBase.cleanPublish;
 
