@@ -43,12 +43,13 @@ npx gbscaffold
 
 The scaffolding consists of directories, base packages and files.  Some defaults are requested as part of running 
 gbscaffold, while others are assumed.  All defaults can be overriden in the final scaffolding.  The scaffolding 
-created is described below in [Scaffolding](#scaffolding)
+created is described below in [Scaffolding][2]
 
 
 
 
 [1]: https://www.google.com
+[2]: #scaffolding
 
 <br>
 <br>
