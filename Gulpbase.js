@@ -9,7 +9,7 @@ import {default as replace} from 'gulp-replace';
 import _ from 'lodash';
 import minimist from 'minimist';
 import {createRequire} from 'node:module';
-import {join} from 'nodepath';
+import {join} from 'node:path';
 import mergeStream from 'merge-stream';
 
 const src = gulp.src;

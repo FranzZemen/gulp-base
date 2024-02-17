@@ -1,11 +1,9 @@
 {
   "name": "@franzzemen/gulp-base",
-  "version": "19.0.1",
+  "version": "19.0.3",
   "description": "Common Gulp base",
   "type": "module",
-  "bin": {
-
-  },
+  "bin": {},
   "main": "publish/cjs/index.js",
   "module": "publish/mjs/index.js",
   "types": "publish/mjs/index.d.ts",
@@ -34,12 +32,14 @@
   },
   "homepage": "https://github.com/FranzZemen/gulp-base#readme",
   "devDependencies": {
-    "gulp": "^4.0.2"
+    "gulp": "^4.0.2",
+    "npm": "^9.1.2"
   },
   "dependencies": {
     "@types/chai": "^4.3.4",
     "@types/merge-stream": "^1.1.2",
     "@types/mocha": "^10.0.0",
+    "@types/npm": "^7.19.0",
     "chai": "^4.3.7",
     "del": "^7.0.0",
     "gulp-copy": "^4.0.1",
